@@ -408,6 +408,13 @@ namespace WebView2
 			THROW_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource2));
 			THROW_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource3));
 
+			T* pT = static_cast<T*>(this);
+			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+
+			CRect bounds;
+			pT->GetClientRect(&bounds);
+			webController_->put_Bounds(bounds);
+
 
 			THROW_IF_FAILED(webView_->get_Settings(&webSettings_));
 			THROW_IF_FAILED(RegisterEventHandlers());

@@ -381,12 +381,8 @@ namespace WebView2
 			{
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
-				CRect bounds, b1;
+				CRect bounds;
 				pT->GetClientRect(&bounds);
-
-				LOG_TRACE << __FUNCTION__ << " rect Width=" << bounds.Width() << " rect Height=" << bounds.Height();
-
 				THROW_IF_FAILED(webController_->put_Bounds(bounds));
 			}
 			else
@@ -415,7 +411,6 @@ namespace WebView2
 
 			CRect bounds;
 			pT->GetClientRect(&bounds);
-
 			webController_->put_Bounds(bounds);
 
 			THROW_IF_FAILED(controller->get_CoreWebView2(&webView_));
