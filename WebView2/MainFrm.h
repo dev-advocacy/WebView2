@@ -7,19 +7,20 @@
 
 #include "WebView2.h"
 #include "WebViewProfile.h"
+#include "WebViewDlg.h"
+#include "WebViewModeless.h"
 
-class CMainFrame : 
-	public CFrameWindowImpl<CMainFrame>, 
-	public CUpdateUI<CMainFrame>,
-	public CMessageFilter, public CIdleHandler
+
+class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CUpdateUI<CMainFrame>,public CMessageFilter, public CIdleHandler
 {
 public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 
-	/*CView m_view;*/
 	CCommandBarCtrl m_CmdBar;
-	std::unique_ptr <CWebView2>			m_webview2;
-	std::unique_ptr < CWebViewProfile>  m_webviewprofile;
+	std::unique_ptr <CWebView2>			m_webview2 = nullptr;
+	std::unique_ptr<CWebViewModeless>	m_dlgwebwiew2 = nullptr;
+	ProfileInformation_t				m_webviewprofile;
+	
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
 
@@ -31,12 +32,17 @@ public:
 	BEGIN_MSG_MAP(CMainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
+
+		// Command menu
 		COMMAND_ID_HANDLER(ID_APP_EXIT, OnFileExit)
 		COMMAND_ID_HANDLER(ID_FILE_NEW, OnFileNew)
 		COMMAND_ID_HANDLER(ID_FILE_NEW_WINDOW, OnFileNewWindow)
 		COMMAND_ID_HANDLER(ID_VIEW_TOOLBAR, OnViewToolBar)
 		COMMAND_ID_HANDLER(ID_VIEW_STATUS_BAR, OnViewStatusBar)
 		COMMAND_ID_HANDLER(ID_APP_ABOUT, OnAppAbout)
+
+		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
+		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
 
 		REFLECT_NOTIFICATIONS()
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
@@ -50,10 +56,15 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+
+	// Command menu
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnFileNewWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 };

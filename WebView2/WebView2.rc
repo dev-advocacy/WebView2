@@ -149,6 +149,13 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,7,7,115,88
 END
 
+IDD_DIALOG_WEB_VIEW DIALOGEX 0, 0, 621, 339
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -164,6 +171,14 @@ BEGIN
         RIGHTMARGIN, 180
         TOPMARGIN, 7
         BOTTOMMARGIN, 95
+    END
+
+    IDD_DIALOG_WEB_VIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 614
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 332
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -228,6 +243,17 @@ BEGIN
     BEGIN
         VALUE "Translation", 0x409, 1200
     END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DIALOG_WEB_VIEW AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

@@ -1,9 +1,9 @@
+
 #pragma once
 
-#include "utility.h"
-#include "CheckFailure.h"
-#include "Logger.h"
 #include "Utility.h"
+#include "CheckFailure.h"
+#include "logger.h"
 #include "headersprop.h"
 
 using namespace Microsoft::WRL;
@@ -11,7 +11,7 @@ using namespace Microsoft::WRL;
 namespace WebView2
 {
 	template <class T>
-	class CWebView2Impl
+	class CDialogWebView2Impl
 	{
 	public:
 		using CallbackFunc = std::function<void(void)>;
@@ -24,28 +24,37 @@ namespace WebView2
 			NavigationStarting,
 		};
 
-	public:
+		void CDialogWebView2Impl_Init()
+		{
+			T* pT = static_cast<T*>(this);
+			LOG_TRACE << __FUNCTION__;
+			if (pT->InitWebView() == false)
+			{
+				// TODO : need to handle this error properly
+				THROW_WIN32(GetLastError());
+			}
+			pT->RegisterCallback(CDialogWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
+			pT->RegisterCallback(CDialogWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
+			pT->RegisterCallback(CDialogWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
+			pT->RegisterCallback(CDialogWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
+		}
 		// Message map and handlers
-		BEGIN_MSG_MAP(CHTMLViewImpl)
+		BEGIN_MSG_MAP(CDialogWebView2Impl)
 			MESSAGE_HANDLER(WM_PAINT, OnPaint)
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
-			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(MSG_RUN_ASYNC_CALLBACK, OnCallBack)
 		END_MSG_MAP()
 
-		//CWebView2Impl() = default;
-		CWebView2Impl()
+		CDialogWebView2Impl()
 		{
 			LOG_TRACE << __FUNCTION__;
-			
-
 			WebView2::Utility::InitCOM();
 			m_callbacks[CallbackType::CreationCompleted] = nullptr;
 			m_callbacks[CallbackType::NavigationCompleted] = nullptr;
 			m_callbacks[CallbackType::AuthenticationCompleted] = nullptr;
 			m_callbacks[CallbackType::NavigationStarting] = nullptr;
 		}
-		CWebView2Impl(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
+		CDialogWebView2Impl(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
 		{
 			if (!url.empty())
 				url_ = url;
@@ -54,7 +63,7 @@ namespace WebView2
 			if (!user_data_directory.empty())
 				userDataDirectory_ = user_data_directory;
 		}
-		virtual ~CWebView2Impl()
+		virtual ~CDialogWebView2Impl()
 		{
 			LOG_TRACE << __FUNCTION__;
 			CloseWebView();
@@ -71,7 +80,7 @@ namespace WebView2
 			m_callbacks[type] = callback;
 		}
 
-#pragma region windows_event
+		#pragma region windows_event
 		virtual BOOL PreTranslateMessage(MSG* pMsg)
 		{
 			return FALSE;
@@ -83,20 +92,6 @@ namespace WebView2
 			CPaintDC dc(pT->m_hWnd);
 			return 0;
 		}
-		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
-		{
-			LOG_TRACE << __FUNCTION__;
-			if (InitWebView() == false)
-			{
-				// TODO : need to handle this error properly
-				THROW_WIN32(GetLastError());
-			}
-			this->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
-			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
-			this->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
-			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
-			return 0;
-		}
 		/// <summary>
 		/// Windows event to Resize the webview2
 		/// </summary>
@@ -105,8 +100,8 @@ namespace WebView2
 			ResizeToClientArea();
 			return 0;
 		}
-#pragma endregion windows_event
-#pragma region event
+		#pragma endregion windows_event
+		#pragma region event
 		virtual void CreationCompleted()
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -123,8 +118,8 @@ namespace WebView2
 		{
 			LOG_TRACE << __FUNCTION__;
 		}
-#pragma endregion events
-#pragma region webview2_implementation
+		#pragma endregion events
+		#pragma region webview2_implementation
 		HRESULT process_cookie_dev_tools(PCWSTR resultJson)
 		{
 			utility::stringstream_t jsonCookieArray;
@@ -327,8 +322,10 @@ namespace WebView2
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
+				LOG_TRACE << __FUNCTION__ << "m_hWnd=" << pT->m_hWnd;
+
 				THROW_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
-				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
+				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CDialogWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
 			}
 			else
 			{
@@ -345,10 +342,12 @@ namespace WebView2
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
 			THROW_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
 			std::wstring langid(Utility::GetUserMUI());
-			THROW_IF_FAILED(options->put_Language(langid.c_str()));
+			THROW_IF_FAILED(options->put_Language(langid.c_str()));	
+
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
-				userDataDirectory_.data(), options.Get(),
-				Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(this, &CWebView2Impl::OnCreateEnvironmentCompleted).Get());
+																  userDataDirectory_.data(), options.Get(),
+																  Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(this, &CDialogWebView2Impl::OnCreateEnvironmentCompleted).Get());
+
 
 			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
 			return (true);
@@ -383,9 +382,16 @@ namespace WebView2
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
-				RECT bounds;
+				CRect bounds, b1;
 				pT->GetClientRect(&bounds);
+
+				LOG_TRACE << __FUNCTION__ << " rect Width=" << bounds.Width() << " rect Height=" << bounds.Height();
+
 				THROW_IF_FAILED(webController_->put_Bounds(bounds));
+			}
+			else
+			{
+				LOG_TRACE << __FUNCTION__ << "webController_ is nullptr";
 			}
 			return true;
 		}
@@ -403,6 +409,15 @@ namespace WebView2
 			THROW_IF_NULL_ALLOC(controller);
 
 			webController_ = controller;
+
+			T* pT = static_cast<T*>(this);
+			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+
+			CRect bounds;
+			pT->GetClientRect(&bounds);
+
+			webController_->put_Bounds(bounds);
+
 			THROW_IF_FAILED(controller->get_CoreWebView2(&webView_));
 
 			THROW_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource2));
@@ -705,15 +720,5 @@ namespace WebView2
 		}
 	};
 
-	template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlWinTraits>
-	class ATL_NO_VTABLE CCWebView2Impl : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CWebView2Impl< T >
-	{
-	public:
-		BEGIN_MSG_MAP(CCHTMLWebView2Impl)
-			CHAIN_MSG_MAP(CWebView2Impl< T >)
-		END_MSG_MAP()
-	};
-
-}
-
+};
 

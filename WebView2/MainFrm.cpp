@@ -4,18 +4,13 @@
 
 #include "pch.h"
 #include "resource.h"
-
 #include "aboutdlg.h"
-#include "View.h"
-#include "WebViewProfile.h"
-#include "WebView2.h"
 #include "MainFrm.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
-
 	return m_webview2->PreTranslateMessage(pMsg);
 }
 
@@ -44,8 +39,8 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleStatusBar();
 
-	auto profile = CWebViewProfile::Profile();
-	m_webview2 = std::make_unique<CWebView2>(profile.browserDirectory, profile.userDataDirectory, L"https://msdn.microsoft.com");
+	m_webviewprofile = CWebViewProfile::Profile();
+	m_webview2 = std::make_unique<CWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	m_hWndClient = m_webview2->Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 
 	UIAddToolBar(hWndToolBar);
@@ -117,5 +112,26 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 {
 	CAboutDlg dlg;
 	dlg.DoModal();
+	return 0;
+}
+
+LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CDlgWebView2 dlg(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
+	dlg.DoModal();
+	
+	return 0;
+}
+
+LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	if (m_dlgwebwiew2 == nullptr)
+		m_dlgwebwiew2 = std::make_unique<CWebViewModeless>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
+	if (m_dlgwebwiew2 != nullptr && ::IsWindow(m_dlgwebwiew2->m_hWnd) == FALSE)
+	{
+		m_dlgwebwiew2->Create(this->m_hWnd);
+		m_dlgwebwiew2->ShowWindow(SW_SHOW);
+	}
+
 	return 0;
 }

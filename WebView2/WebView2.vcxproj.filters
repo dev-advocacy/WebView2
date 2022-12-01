@@ -25,18 +25,21 @@
     <Filter Include="Source Files\WebView2\utility">
       <UniqueIdentifier>{a34e56fd-5a2b-4bb0-b89b-49b203ee5b70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Dialogs">
+      <UniqueIdentifier>{2e948909-6711-46e8-aa8a-e7ec08348a40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Dialogs">
+      <UniqueIdentifier>{f73a13ac-4fac-4529-85f4-7bee0b376a61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\WebView2\WebView2Impl">
+      <UniqueIdentifier>{c1dd53d6-3e88-4572-b02b-076c5bb7500b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WebView2Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="View.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AboutDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WebView2Impl.cpp">
@@ -63,15 +66,18 @@
     <ClCompile Include="Utility.cpp">
       <Filter>Source Files\WebView2\utility</Filter>
     </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="WebViewDlg.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="WebViewModeless.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="View.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AboutDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
@@ -95,14 +101,29 @@
     <ClInclude Include="WebView2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WebView2Impl.h">
-      <Filter>Header Files\WebView2</Filter>
-    </ClInclude>
-    <ClInclude Include="WebViewProfile.h">
-      <Filter>Header Files\WebView2</Filter>
-    </ClInclude>
     <ClInclude Include="Utility.h">
       <Filter>Header Files\WebView2\utility</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="WebViewDlg.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="WebView2DlgImpl.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="WebView2Impl.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="WebViewProfile.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="headersprop.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="WebViewModeless.h">
+      <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
