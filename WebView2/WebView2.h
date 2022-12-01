@@ -14,7 +14,7 @@ public:
 	CWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url);
 	~CWebView2();
 
-	void CreationCompleted();;
+	void CreationCompleted();
 	void NavigationCompleted(std::wstring url);
 	void AuthenticationCompleted();
 

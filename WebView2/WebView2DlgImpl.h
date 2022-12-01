@@ -1,12 +1,9 @@
-
 #pragma once
 
 #include "Utility.h"
 #include "CheckFailure.h"
 #include "logger.h"
 #include "headersprop.h"
-
-using namespace Microsoft::WRL;
 
 namespace WebView2
 {
@@ -325,7 +322,7 @@ namespace WebView2
 				LOG_TRACE << __FUNCTION__ << "m_hWnd=" << pT->m_hWnd;
 
 				THROW_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
-				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CDialogWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
+				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CDialogWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
 			}
 			else
 			{
@@ -346,7 +343,7 @@ namespace WebView2
 
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
 																  userDataDirectory_.data(), options.Get(),
-																  Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(this, &CDialogWebView2Impl::OnCreateEnvironmentCompleted).Get());
+											  Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(this, &CDialogWebView2Impl::OnCreateEnvironmentCompleted).Get());
 
 
 			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
@@ -643,7 +640,7 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 
 
-			HRESULT hr = m_webviewEventSource3->add_BasicAuthenticationRequested(Callback<ICoreWebView2BasicAuthenticationRequestedEventHandler>([this](
+			HRESULT hr = m_webviewEventSource3->add_BasicAuthenticationRequested(Microsoft::WRL::Callback<ICoreWebView2BasicAuthenticationRequestedEventHandler>([this](
 				ICoreWebView2* sender,
 				ICoreWebView2BasicAuthenticationRequestedEventArgs* args) 	-> HRESULT
 				{
@@ -654,7 +651,7 @@ namespace WebView2
 
 
 			// response handler
-			hr = m_webviewEventSource2->add_WebResourceResponseReceived(Callback<ICoreWebView2WebResourceResponseReceivedEventHandler>([this](
+			hr = m_webviewEventSource2->add_WebResourceResponseReceived(Microsoft::WRL::Callback<ICoreWebView2WebResourceResponseReceivedEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2WebResourceResponseReceivedEventArgs* args)	-> HRESULT
 				{
@@ -665,7 +662,7 @@ namespace WebView2
 			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 			// NavigationCompleted handler
-			hr = webView_->add_NavigationCompleted(Callback<ICoreWebView2NavigationCompletedEventHandler>([this](
+			hr = webView_->add_NavigationCompleted(Microsoft::WRL::Callback<ICoreWebView2NavigationCompletedEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2NavigationCompletedEventArgs* args) -> HRESULT
 				{
@@ -675,7 +672,7 @@ namespace WebView2
 
 
 			// NavigationStarting handler
-			hr = webView_->add_NavigationStarting(Callback<ICoreWebView2NavigationStartingEventHandler>([this](
+			hr = webView_->add_NavigationStarting(Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT
 				{
@@ -685,7 +682,7 @@ namespace WebView2
 			// Add request filter
 			hr = webView_->AddWebResourceRequestedFilter(L"*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
 			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-			hr = webView_->add_WebResourceRequested(Callback<ICoreWebView2WebResourceRequestedEventHandler>([this](
+			hr = webView_->add_WebResourceRequested(Microsoft::WRL::Callback<ICoreWebView2WebResourceRequestedEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2WebResourceRequestedEventArgs* args) -> HRESULT
 				{
