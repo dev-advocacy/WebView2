@@ -9,10 +9,6 @@
       "platform": "windows"
     },
     {
-      "name": "boost-date-time",
-      "platform": "windows"
-    },
-    {
       "name": "boost-filesystem",
       "platform": "windows"
     },

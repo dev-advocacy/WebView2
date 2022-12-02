@@ -139,4 +139,7 @@
   <ItemGroup>
     <None Include="vcpkg.json" />
   </ItemGroup>
+  <ItemGroup>
+    <Xml Include="manifest.xml" />
+  </ItemGroup>
 </Project>

@@ -20,6 +20,6 @@ LRESULT CWebViewModeless::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 LRESULT CWebViewModeless::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	m_bModal == TRUE ? EndDialog(wID) : DestroyWindow();
+	m_isModal == true ? EndDialog(wID) : DestroyWindow();
 	return 0;
 }

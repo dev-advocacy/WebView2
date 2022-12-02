@@ -132,6 +132,5 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 		m_dlgwebwiew2->Create(this->m_hWnd);
 		m_dlgwebwiew2->ShowWindow(SW_SHOW);
 	}
-
 	return 0;
 }

@@ -27,7 +27,7 @@ namespace WebView2
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CHTMLViewImpl)
-			MESSAGE_HANDLER(WM_PAINT, OnPaint)
+			//MESSAGE_HANDLER(WM_PAINT, OnPaint)
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(MSG_RUN_ASYNC_CALLBACK, OnCallBack)
@@ -39,7 +39,7 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 			
 
-			WebView2::Utility::InitCOM();
+			THROW_IF_FAILED(WebView2::Utility::InitCOM());
 			m_callbacks[CallbackType::CreationCompleted] = nullptr;
 			m_callbacks[CallbackType::NavigationCompleted] = nullptr;
 			m_callbacks[CallbackType::AuthenticationCompleted] = nullptr;
@@ -81,7 +81,7 @@ namespace WebView2
 			T* pT = static_cast<T*>(this);
 			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 			CPaintDC dc(pT->m_hWnd);
-			return 0;
+			return 0L;
 		}
 		void OnDlgInit()
 		{
@@ -96,6 +96,7 @@ namespace WebView2
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
+			m_isModal = true;
 		}
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
@@ -297,6 +298,7 @@ namespace WebView2
 		std::wstring								url_;
 		std::wstring								browserDirectory_;
 		std::wstring								userDataDirectory_;
+		bool										m_isModal = false;
 	private:
 		wil::com_ptr<ICoreWebView2Environment>		webViewEnvironment_ = nullptr;
 		wil::com_ptr<ICoreWebView2>					webView_ = nullptr;
@@ -340,7 +342,6 @@ namespace WebView2
 			{
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
 				THROW_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
 				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
 			}

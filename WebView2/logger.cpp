@@ -151,28 +151,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, src::severity_logger_mt)
 
 
 #ifndef _DEBUG // we tracing only error and fatal on release mode
-		// Create an event log sink
-
-		boost::shared_ptr< event_log_sink > evt_log_sink(new event_log_sink());
-
-		// RegisterEventSource
-		evt_log_sink->set_formatter(formatter);
-
-		// We'll have to map our custom levels to the event log event types
-		sinks::event_log::custom_event_type_mapping< severity_level > mapping("Severity");
-		mapping[severity_level::normal] = sinks::event_log::info;
-		mapping[severity_level::warning] = sinks::event_log::warning;
-		mapping[severity_level::error] = sinks::event_log::error;
-
-		evt_log_sink->locked_backend()->set_event_type_mapper(mapping);
-
-		// Add the sink to the core
-		logging::core::get()->add_sink(evt_log_sink);
-
-		// log only errors
-
 		consoleSink->set_filter(severity >= severity_level::error);
-		evt_log_sink->set_filter(severity >= severity_level::error);
 		filetextsink->set_filter(severity >= GetSeverityLevel(L"logfilelevel"));
 #endif // DEBUG
 
