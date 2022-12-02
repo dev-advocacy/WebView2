@@ -81,6 +81,9 @@ extern CAppModule _Module;
 #include <boost/regex.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/log/sinks/text_ipc_message_queue_backend.hpp>
+#include <boost/log/utility/ipc/reliable_message_queue.hpp>
+#include <boost/log/utility/ipc/object_name.hpp>
 
 
 //namespaces

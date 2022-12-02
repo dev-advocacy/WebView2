@@ -39,6 +39,7 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(line_id, "LineID", unsigned int)
 BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "TimeStamp", boost::posix_time::ptime)
 BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", logging::trivial::severity_level)
 BOOST_LOG_ATTRIBUTE_KEYWORD(processid, "ProcessID", logging::attributes::current_process_id::value_type)
+BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", attrs::current_thread_id::value_type)
 
 
 /// <summary>
@@ -105,7 +106,10 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, src::severity_logger_mt)
 
 	typedef sinks::synchronous_sink<sinks::text_file_backend> TextSink;						// file text sink typedef
 	typedef sinks::synchronous_sink<sinks::debug_output_backend> outputdebugstring_sink;	// OutPutDebugString typedef
-	typedef sinks::synchronous_sink< sinks::simple_event_log_backend > event_log_sink;		// eventlog sync
+
+	typedef logging::ipc::reliable_message_queue queue_t;
+	typedef sinks::text_ipc_message_queue_backend< queue_t > backend_t;
+	typedef sinks::synchronous_sink< backend_t > sink_t;
 
 	if (!GetLog(pFileName))
 	{
@@ -130,6 +134,23 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, src::severity_logger_mt)
 		logging::formatter formatterconsole = expr::stream
 			<< expr::smessage << std::endl;
 
+		// Create a sink that is associated with the interprocess message queue
+		// named "ipc_message_queue".
+		boost::shared_ptr< sink_t > sink = boost::make_shared< sink_t >
+		(
+				keywords::name = logging::ipc::object_name(logging::ipc::object_name::user, "WebView_ipc_message_queue"),
+				keywords::open_mode = logging::open_mode::open_or_create,
+				keywords::capacity = 256,
+				keywords::block_size = 1024,
+				keywords::overflow_policy = queue_t::block_on_overflow
+		);
+
+		// Set the formatter
+		sink->set_formatter(expr::stream << "[" << timestamp << "] [" << processid << ":" << thread_id << "] " << expr::smessage);
+
+		logging::core::get()->add_sink(sink);
+		// Add the commonly used attributes, including TimeStamp, ProcessID and ThreadID
+		logging::add_common_attributes();
 
 		filetextbackend->auto_flush(true);
 
