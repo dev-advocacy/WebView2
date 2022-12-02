@@ -248,7 +248,6 @@
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="WebView2.h" />
-    <ClInclude Include="WebView2DlgImpl.h" />
     <ClInclude Include="WebView2Impl.h" />
     <ClInclude Include="WebViewDlg.h" />
     <ClInclude Include="WebViewModeless.h" />

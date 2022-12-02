@@ -83,6 +83,20 @@ namespace WebView2
 			CPaintDC dc(pT->m_hWnd);
 			return 0;
 		}
+		void OnDlgInit()
+		{
+			T* pT = static_cast<T*>(this);
+			LOG_TRACE << __FUNCTION__;
+			if (pT->InitWebView() == false)
+			{
+				// TODO : need to handle this error properly
+				THROW_WIN32(GetLastError());
+			}
+			pT->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
+			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
+			pT->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
+			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
+		}
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
 			LOG_TRACE << __FUNCTION__;

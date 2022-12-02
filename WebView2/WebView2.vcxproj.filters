@@ -110,9 +110,6 @@
     <ClInclude Include="WebViewDlg.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="WebView2DlgImpl.h">
-      <Filter>Header Files\WebView2\WebView2Impl</Filter>
-    </ClInclude>
     <ClInclude Include="WebView2Impl.h">
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
     </ClInclude>

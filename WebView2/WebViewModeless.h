@@ -1,8 +1,8 @@
 #pragma once
 
-#include "WebView2DlgImpl.h"
+#include "WebView2Impl.h"
 
-class CWebViewModeless : public CDialogImpl<CWebViewModeless>, public WebView2::CDialogWebView2Impl<CWebViewModeless>
+class CWebViewModeless : public CDialogImpl<CWebViewModeless>, public WebView2::CWebView2Impl<CWebViewModeless>
 {
 public:
 	enum { IDD = IDD_DIALOG_WEB_VIEW };
@@ -13,7 +13,7 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		CHAIN_MSG_MAP(WebView2::CDialogWebView2Impl<CWebViewModeless>)
+		CHAIN_MSG_MAP(WebView2::CWebView2Impl<CWebViewModeless>)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
