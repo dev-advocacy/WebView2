@@ -83,7 +83,7 @@ namespace WebView2
 			CPaintDC dc(pT->m_hWnd);
 			return 0L;
 		}
-		void OnDlgInit()
+		void OnDlgInit(bool ismodeless=false)
 		{
 			T* pT = static_cast<T*>(this);
 			LOG_TRACE << __FUNCTION__;
@@ -96,7 +96,7 @@ namespace WebView2
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
-			m_isModal = true;
+			m_isModal = ismodeless;
 		}
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
@@ -513,7 +513,7 @@ namespace WebView2
 				}
 			}
 			result += L"]";
-			LOG_TRACE << "uri:" << uri << " headers:" << result;
+			//LOG_DEBUG << "uri:" << uri << " headers:" << result;
 		}
 
 		static void DumpCookieHeaders(ICoreWebView2WebResourceRequestedEventArgs* args)
@@ -567,7 +567,7 @@ namespace WebView2
 					}
 				}
 				result += L"]";
-				LOG_TRACE << "uri:" << uri << " cookies:" << result;
+				//LOG_DEBUG << "uri:" << uri << " cookies:" << result;
 			}
 		}
 		void hanle_authorization(ICoreWebView2WebResourceRequestedEventArgs* args)
@@ -644,7 +644,8 @@ namespace WebView2
 				}
 			}
 			result += L"]";
-			LOG_TRACE << "response headers:" << result;
+
+			//LOG_DEBUG << "response headers:" << result;
 
 			return S_OK;
 		}

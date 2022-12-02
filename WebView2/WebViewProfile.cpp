@@ -39,7 +39,7 @@ ProfileInformation_t CWebViewProfile::Profile()
 		LOG_TRACE << "The WebView2 runtime is not installed";
 		LOG_TRACE << "Please install the WebView2 runtime before running this application available on https://go.microsoft.com/fwlink/p/?LinkId=2124703";
 	}
-	LOG_TRACE << "Found installed WebView version" << edgeVersionInfo;
+	LOG_TRACE << "Found installed WebView version=" << edgeVersionInfo;
 
 	if (webView2Version.empty())
 	{   // User did not provided specific WebView2 versions and channels.
