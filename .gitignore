@@ -6,3 +6,5 @@
 /x64/Debug
 /.vs/WebViewSolution
 /x64/Release
+/WebView2Logger/vcpkg_installed/x64-windows
+/WebView2Logger/x64/Debug
