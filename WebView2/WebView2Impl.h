@@ -27,7 +27,7 @@ namespace WebView2
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CHTMLViewImpl)
-			//MESSAGE_HANDLER(WM_PAINT, OnPaint)
+			MESSAGE_HANDLER(WM_PAINT, OnPaint)
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(MSG_RUN_ASYNC_CALLBACK, OnCallBack)
@@ -342,6 +342,13 @@ namespace WebView2
 			{
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+
+				
+				wchar_t t[255];
+				pT->GetWindowText( (LPTSTR) t, 255);
+
+				LOG_TRACE << "Hwnd=" << pT->m_hWnd << " caption=" << std::wstring(t);
+
 				THROW_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
 				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
 			}
@@ -357,13 +364,30 @@ namespace WebView2
 		bool InitWebView()
 		{
 			LOG_TRACE << __FUNCTION__ << " Using user data directory:" << userDataDirectory_.data();
+
+			T* pT = static_cast<T*>(this);
+			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
 			THROW_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
 			std::wstring langid(Utility::GetUserMUI());
 			THROW_IF_FAILED(options->put_Language(langid.c_str()));
+
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
 				userDataDirectory_.data(), options.Get(),
-				Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(this, &CWebView2Impl::OnCreateEnvironmentCompleted).Get());
+				Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
+					this, &CWebView2Impl::OnCreateEnvironmentCompleted).Get());
+
+
+
+
+
+
+
+
+
+
+
 
 			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
 			return (true);
@@ -398,9 +422,27 @@ namespace WebView2
 				T* pT = static_cast<T*>(this);
 				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
-				RECT bounds;
+				CRect bounds;
 				pT->GetClientRect(&bounds);
-				THROW_IF_FAILED(webController_->put_Bounds(bounds));
+
+
+				HRESULT hr = webController_->put_Bounds(bounds);
+				if (SUCCEEDED(hr))
+				{
+					BOOL isVisible = FALSE;
+					hr = webController_->get_IsVisible(&isVisible);
+					if (SUCCEEDED(hr) && isVisible == FALSE)
+					{
+						webController_->put_IsVisible(TRUE);
+						CRect rc;
+						webController_->get_Bounds(&rc);
+						LOG_TRACE << __FUNCTION__ << " width=" << rc.Width() << " height=" << rc.Height() << " visibility=" << isVisible;
+					}
+				}
+				else
+				{
+					LOG_TRACE << __FUNCTION__ << " hr=" << hr;
+				}
 			}
 			return true;
 		}
@@ -430,6 +472,8 @@ namespace WebView2
 			pT->GetClientRect(&bounds);
 			webController_->put_Bounds(bounds);
 
+			BOOL isVisible = TRUE;
+			webController_->put_IsVisible(isVisible);
 
 			THROW_IF_FAILED(webView_->get_Settings(&webSettings_));
 			THROW_IF_FAILED(RegisterEventHandlers());
@@ -733,7 +777,7 @@ namespace WebView2
 	{
 	public:
 		BEGIN_MSG_MAP(CCHTMLWebView2Impl)
-			CHAIN_MSG_MAP(CWebView2Impl< T >)
+			CHAIN_MSG_MAP(CWebView2Impl< T >)		
 		END_MSG_MAP()
 	};
 

@@ -21,6 +21,7 @@
 #include <concurrent_unordered_map.h>
 #include <d2d1_3.h>
 #include <wininet.h>
+#include <dcomp.h>
 
 #include <wincodec.h>
 

@@ -7,9 +7,14 @@
 #ifndef PCH_H
 #define PCH_H
 
-#define _WIN32_WINNT	0x0601
+#define BOOST_USE_WINAPI_VERSION 0x0601
+
+#define _WIN32_WINNT	_WIN32_WINNT_WINBLUE
 #define NTDDI_VERSION	0x0A000004
 
+#define USE_WEBVIEW2_WIN10
+
+#define IDM_CREATION_MODE_TARGET_DCOMP  195
 
 // add headers that you want to pre-compile here
 #include "framework.h"

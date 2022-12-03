@@ -160,21 +160,21 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, src::severity_logger_mt)
 		logging::core::get()->add_sink(filetextsink);
 
 
-#if _DEBUG	
+//#if _DEBUG	
 		boost::shared_ptr<outputdebugstring_sink> output_sink(new outputdebugstring_sink());
 		output_sink->set_formatter(formatterout);
 		logging::core::get()->add_sink(output_sink);
-#endif // _DEBUG
+//#endif // _DEBUG
 
 		auto consoleSink = logging::add_console_log(std::cout);
 		consoleSink->set_formatter(formatterconsole);
 
 
 
-#ifndef _DEBUG // we tracing only error and fatal on release mode
-		consoleSink->set_filter(severity >= severity_level::error);
-		filetextsink->set_filter(severity >= GetSeverityLevel(L"logfilelevel"));
-#endif // DEBUG
+//#ifndef _DEBUG // we tracing only error and fatal on release mode
+//		consoleSink->set_filter(severity >= severity_level::error);
+//		filetextsink->set_filter(severity >= GetSeverityLevel(L"logfilelevel"));
+//#endif // DEBUG
 
 	}
 	return logger;

@@ -7,6 +7,8 @@
 #include "aboutdlg.h"
 #include "MainFrm.h"
 
+#include "WebBrowserDlg.h"
+
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
@@ -120,6 +122,14 @@ LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	CDlgWebView2 dlg(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	dlg.DoModal();
 	
+	return 0;
+}
+
+LRESULT CMainFrame::OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CWebBrowserDlg dlg;
+	dlg.DoModal();
+
 	return 0;
 }
 

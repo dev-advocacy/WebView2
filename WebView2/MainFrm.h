@@ -9,6 +9,7 @@
 #include "WebViewProfile.h"
 #include "WebViewDlg.h"
 #include "WebViewModeless.h"
+#include "WebView2CompImpl.h"
 
 
 class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CUpdateUI<CMainFrame>,public CMessageFilter, public CIdleHandler
@@ -43,6 +44,8 @@ public:
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
+		COMMAND_ID_HANDLER(ID_SCENARIO_MODELESSDIALOGUSINGDIRECTCOMPOSITION, OnScenarioWebView2ModalDirectComp)
+		
 
 		REFLECT_NOTIFICATIONS()
 		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
@@ -67,4 +70,7 @@ public:
 
 	LRESULT OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	
 };
