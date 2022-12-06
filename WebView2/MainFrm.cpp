@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "aboutdlg.h"
 #include "MainFrm.h"
+#include "ProgressDlg.h"	
 
 #include "WebBrowserDlg.h"
 
@@ -125,9 +126,16 @@ LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	return 0;
 }
 
+//setup.exe(under Webview installation directory) with following targets.
+//--force - uninstall
+//--uninstall
+//--msedgewebview
+//--system - level
+//setup.exe --uninstall --msedgewebview --system-level --verbose-logging --force-uninstall
+
 LRESULT CMainFrame::OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CWebBrowserDlg dlg;
+	CProgressDlg dlg(L"https://go.microsoft.com/fwlink/p/?LinkId=2124703", L"D:\\DEV\\DEV.DS.2022\\WebView2\\x64\\Debug\\MicrosoftEdgeWebview2Setup.exe");
 	dlg.DoModal();
 
 	return 0;

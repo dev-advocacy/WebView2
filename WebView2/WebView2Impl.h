@@ -37,9 +37,7 @@ namespace WebView2
 		CWebView2Impl()
 		{
 			LOG_TRACE << __FUNCTION__;
-			
-
-			THROW_IF_FAILED(WebView2::Utility::InitCOM());
+			WebView2::Utility::InitCOM();
 			m_callbacks[CallbackType::CreationCompleted] = nullptr;
 			m_callbacks[CallbackType::NavigationCompleted] = nullptr;
 			m_callbacks[CallbackType::AuthenticationCompleted] = nullptr;
@@ -79,38 +77,40 @@ namespace WebView2
 		virtual LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 		{
 			T* pT = static_cast<T*>(this);
-			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-			CPaintDC dc(pT->m_hWnd);
+			if (::IsWindow(pT->m_hWnd))
+			{
+				CPaintDC dc(pT->m_hWnd);
+			}
 			return 0L;
 		}
-		void OnDlgInit(bool ismodeless=false)
+		HRESULT OnDlgInit(bool ismodeless=false)
 		{
 			T* pT = static_cast<T*>(this);
 			LOG_TRACE << __FUNCTION__;
 			if (pT->InitWebView() == false)
 			{
-				// TODO : need to handle this error properly
-				THROW_WIN32(GetLastError());
+				RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
 			}
 			pT->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
 			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
 			m_isModal = ismodeless;
+			return 0L;
 		}
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
+			
 			LOG_TRACE << __FUNCTION__;
 			if (InitWebView() == false)
 			{
-				// TODO : need to handle this error properly
-				THROW_WIN32(GetLastError());
+				RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
 			}
 			this->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
 			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
 			this->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
 			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
-			return 0;
+			return 0L;
 		}
 		/// <summary>
 		/// Windows event to Resize the webview2
@@ -178,12 +178,12 @@ namespace WebView2
 			}
 			return S_OK;
 		}
-		bool get_cookies_by_devtools()
+		HRESULT get_cookies_by_devtools()
 		{
 			LOG_TRACE << __FUNCTION__;
-			THROW_IF_NULL_ALLOC(webSettings_);
+			RETURN_IF_NULL_ALLOC(webSettings_);
 			wil::com_ptr<ICoreWebView2DevToolsProtocolEventReceiver> receiver;
-			THROW_IF_FAILED(webView_->GetDevToolsProtocolEventReceiver(L"Network.getAllCookies", &receiver));
+			RETURN_IF_FAILED(webView_->GetDevToolsProtocolEventReceiver(L"Network.getAllCookies", &receiver));
 			HRESULT hr = webView_->CallDevToolsProtocolMethod(L"Network.getAllCookies", L"{}", Callback<ICoreWebView2CallDevToolsProtocolMethodCompletedHandler>([this](HRESULT error, PCWSTR resultJson) -> HRESULT
 				{
 					if (SUCCEEDED(error))
@@ -193,35 +193,34 @@ namespace WebView2
 			return error;
 				}
 			).Get());
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-			return true;
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
+			return S_OK;
 		}
-		bool add_cookie(std::wstring domain, std::wstring name, std::wstring value)
+		HRESULT add_cookie(std::wstring domain, std::wstring name, std::wstring value)
 		{
 			LOG_TRACE << __FUNCTION__ << L" domain=" << domain << L" name=" << name << L" value=" << value;
-			THROW_IF_NULL_ALLOC(cookieManager_);
+			RETURN_IF_NULL_ALLOC(cookieManager_);
 			wil::com_ptr<ICoreWebView2Cookie> cookie;
 			HRESULT hr = cookieManager_->CreateCookie(name.c_str(), value.c_str(), domain.c_str(), L"/", &cookie);
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
 
 			//cookie->put_IsHttpOnly(TRUE);
 			cookie->put_IsSecure(TRUE);
 
 			hr = cookieManager_->AddOrUpdateCookie(cookie.get());
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-
-			return true;
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
+			return S_OK;
 		}
-		bool get_cookies(std::wstring uri)
+		HRESULT get_cookies(std::wstring uri)
 		{
-			THROW_IF_NULL_ALLOC(cookieManager_);
+			RETURN_IF_NULL_ALLOC(cookieManager_);
 			HRESULT hr = cookieManager_->GetCookies(uri.c_str(), Callback<ICoreWebView2GetCookiesCompletedHandler>([this, uri](HRESULT error_code, ICoreWebView2CookieList* list) -> HRESULT
 				{
 					if (SUCCEEDED(error_code))
 					{
 						std::wstring result;
 						UINT cookie_list_size;
-						THROW_IF_FAILED(list->get_Count(&cookie_list_size));
+						RETURN_IF_FAILED(list->get_Count(&cookie_list_size));
 						if (cookie_list_size == 0)
 						{
 							result += L"No cookies found.";
@@ -237,7 +236,7 @@ namespace WebView2
 							for (UINT i = 0; i < cookie_list_size; ++i)
 							{
 								wil::com_ptr<ICoreWebView2Cookie> cookie;
-								THROW_IF_FAILED(list->GetValueAtIndex(i, &cookie));
+								RETURN_IF_FAILED(list->GetValueAtIndex(i, &cookie));
 
 								if (cookie.get())
 								{
@@ -255,23 +254,23 @@ namespace WebView2
 			return error_code;
 				}
 			).Get());
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-			return true;
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
+			return S_OK;
 		}
-		bool delete_all_cookies()
+		HRESULT delete_all_cookies()
 		{
 			LOG_TRACE << __FUNCTION__;
-			THROW_IF_NULL_ALLOC(cookieManager_);
+			RETURN_IF_NULL_ALLOC(cookieManager_);
 			HRESULT hr = cookieManager_->DeleteAllCookies();
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
 			return true;
 		}
-		bool navigate_to(std::wstring_view url)
+		HRESULT navigate_to(std::wstring_view url)
 		{
 			LOG_TRACE << __FUNCTION__;
 
 			if (url.empty())
-				THROW_IF_FAILED_MSG(E_INVALIDARG, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(E_INVALIDARG).data(), E_INVALIDARG);
+				RETURN_IF_FAILED_MSG(E_INVALIDARG, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(E_INVALIDARG).data(), E_INVALIDARG);
 
 			std::wstring url_to_navigate(url);
 
@@ -283,13 +282,13 @@ namespace WebView2
 					url_to_navigate = L"http://" + url_to_navigate;
 			}
 			HRESULT hr = webView_->Navigate(url_to_navigate.c_str());
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-			return true;
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+			return S_OK;
 		}
 
 		bool open_dev_tools()
 		{
-			THROW_IF_FAILED(webView_->OpenDevToolsWindow());
+			RETURN_IF_FAILED(webView_->OpenDevToolsWindow());
 			return true;
 		}
 
@@ -319,10 +318,10 @@ namespace WebView2
 
 	private:
 
-		bool Navigate(std::wstring_view url, CallbackFunc onComplete)
+		HRESULT Navigate(std::wstring_view url, CallbackFunc onComplete)
 		{
 			LOG_TRACE << __FUNCTION__;
-			THROW_IF_NULL_ALLOC(webView_);
+			RETURN_IF_NULL_ALLOC(webView_);
 
 			m_callbacks[CallbackType::NavigationCompleted] = onComplete;
 			return (navigate_to(url));
@@ -341,7 +340,7 @@ namespace WebView2
 			if (hr == S_OK)
 			{
 				T* pT = static_cast<T*>(this);
-				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+				RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
 				
 				wchar_t t[255];
@@ -349,48 +348,37 @@ namespace WebView2
 
 				LOG_TRACE << "Hwnd=" << pT->m_hWnd << " caption=" << std::wstring(t);
 
-				THROW_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
-				THROW_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
+				RETURN_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
+				RETURN_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl::OnCreateWebViewControllerCompleted).Get()));
 			}
 			else
 			{
-				THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+				RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
 			}
 			return S_OK;
 		}
 		/// <summary>
 		/// Initialize the webview2
 		/// </summary>
-		bool InitWebView()
+		HRESULT InitWebView()
 		{
 			LOG_TRACE << __FUNCTION__ << " Using user data directory:" << userDataDirectory_.data();
 
 			T* pT = static_cast<T*>(this);
-			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+			RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
-			THROW_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
+			RETURN_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
 			std::wstring langid(Utility::GetUserMUI());
-			THROW_IF_FAILED(options->put_Language(langid.c_str()));
+			RETURN_IF_FAILED(options->put_Language(langid.c_str()));
 
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
 				userDataDirectory_.data(), options.Get(),
 				Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
 					this, &CWebView2Impl::OnCreateEnvironmentCompleted).Get());
 
-
-
-
-
-
-
-
-
-
-
-
-			THROW_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-			return (true);
+			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+			return (S_OK);
 		}
 		void CloseWebView()
 		{
@@ -415,12 +403,12 @@ namespace WebView2
 		/// Resize the webview2
 		/// </summary>
 		/// <returns></returns>	
-		bool ResizeToClientArea()
+		HRESULT ResizeToClientArea()
 		{
 			if (webController_)
 			{
 				T* pT = static_cast<T*>(this);
-				THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+				RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
 				CRect bounds;
 				pT->GetClientRect(&bounds);
@@ -444,7 +432,7 @@ namespace WebView2
 					LOG_TRACE << __FUNCTION__ << " hr=" << hr;
 				}
 			}
-			return true;
+			return S_OK;
 		}
 		/// <summary>
 		/// Create the webview2 controller
@@ -457,16 +445,16 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 			HRESULT hr = S_OK;
 
-			THROW_IF_NULL_ALLOC(controller);
+			RETURN_IF_NULL_ALLOC(controller);
 
 			webController_ = controller;
-			THROW_IF_FAILED(controller->get_CoreWebView2(&webView_));
+			RETURN_IF_FAILED(controller->get_CoreWebView2(&webView_));
 
-			THROW_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource2));
-			THROW_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource3));
+			RETURN_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource2));
+			RETURN_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource3));
 
 			T* pT = static_cast<T*>(this);
-			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
+			RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
 			CRect bounds;
 			pT->GetClientRect(&bounds);
@@ -475,11 +463,11 @@ namespace WebView2
 			BOOL isVisible = TRUE;
 			webController_->put_IsVisible(isVisible);
 
-			THROW_IF_FAILED(webView_->get_Settings(&webSettings_));
-			THROW_IF_FAILED(RegisterEventHandlers());
+			RETURN_IF_FAILED(webView_->get_Settings(&webSettings_));
+			RETURN_IF_FAILED(RegisterEventHandlers());
 			ResizeToClientArea();
 			auto& callback = m_callbacks[CallbackType::CreationCompleted];
-			THROW_IF_NULL_ALLOC(callback);
+			RETURN_IF_NULL_ALLOC(callback);
 			RunAsync(callback);
 			return S_OK;
 		}
@@ -495,7 +483,8 @@ namespace WebView2
 				hr = args->get_WebErrorStatus(&webErrorStatus);
 				if (webErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
 				{
-					ATLTRACE("function=%s message=COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED\n", __func__);
+					LOG_TRACE << "function=" << __func__  << "COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED";
+					return webErrorStatus;
 				}
 			}
 			wil::unique_cotaskmem_string uri;
@@ -523,18 +512,18 @@ namespace WebView2
 			return S_OK;
 		}
 
-		static void DumpHeaders(ICoreWebView2WebResourceRequestedEventArgs* args)
+		static HRESULT DumpHeaders(ICoreWebView2WebResourceRequestedEventArgs* args)
 		{
 			wil::com_ptr <ICoreWebView2WebResourceRequest>			 request = nullptr;
 			wil::com_ptr<ICoreWebView2HttpHeadersCollectionIterator> it_headers = nullptr;
 			wil::com_ptr <ICoreWebView2HttpRequestHeaders>			 headers = nullptr;
 
 			auto hr = args->get_Request(&request);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d", __func__, std::system_category().message(hr).data(), hr);
 			hr = request->get_Headers(&headers);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d", __func__, std::system_category().message(hr).data(), hr);
 			hr = headers->GetIterator(&it_headers);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d", __func__, std::system_category().message(hr).data(), hr);
 
 			LPWSTR uri = nullptr;
 			request->get_Uri(&uri);
@@ -547,10 +536,10 @@ namespace WebView2
 				wil::unique_cotaskmem_string name;
 				wil::unique_cotaskmem_string value;
 
-				CHECK_FAILURE(it_headers->GetCurrentHeader(&name, &value));
+				RETURN_IF_FAILED(it_headers->GetCurrentHeader(&name, &value));
 				result += L"{\"name\": " + Utility::EncodeQuote(name.get()) + L", \"value\": " + Utility::EncodeQuote(value.get()) + L"}";
 				BOOL hasNext = FALSE;
-				CHECK_FAILURE(it_headers->MoveNext(&hasNext));
+				RETURN_IF_FAILED(it_headers->MoveNext(&hasNext));
 				if (hasNext)
 				{
 					result += L", ";
@@ -558,17 +547,18 @@ namespace WebView2
 			}
 			result += L"]";
 			//LOG_DEBUG << "uri:" << uri << " headers:" << result;
+			return S_OK;
 		}
 
-		static void DumpCookieHeaders(ICoreWebView2WebResourceRequestedEventArgs* args)
+		static HRESULT DumpCookieHeaders(ICoreWebView2WebResourceRequestedEventArgs* args)
 		{
 			wil::com_ptr <ICoreWebView2WebResourceRequest>			 request = nullptr;
 			wil::com_ptr <ICoreWebView2HttpRequestHeaders>			 headers = nullptr;
 
 			auto hr = args->get_Request(&request);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 			hr = request->get_Headers(&headers);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 			LPWSTR uri = nullptr;
 			request->get_Uri(&uri);
@@ -587,23 +577,12 @@ namespace WebView2
 					{
 						wil::unique_cotaskmem_string name;
 						wil::unique_cotaskmem_string value;
-
-
-
-
-						CHECK_FAILURE(it->GetCurrentHeader(&name, &value));
+						RETURN_IF_FAILED(it->GetCurrentHeader(&name, &value));
 						result += L"{\"name\": " + Utility::EncodeQuote(name.get())
 							+ L", \"value\": " + Utility::EncodeQuote(value.get()) + L"}";
 
-						std::wstring dd = name.get();
-
-						std::wstring dd1 = value.get();
-
-
-
-
 						BOOL hasNext = FALSE;
-						CHECK_FAILURE(it->MoveNext(&hasNext));
+						RETURN_IF_FAILED(it->MoveNext(&hasNext));
 						if (hasNext)
 						{
 							result += L", ";
@@ -613,16 +592,17 @@ namespace WebView2
 				result += L"]";
 				//LOG_DEBUG << "uri:" << uri << " cookies:" << result;
 			}
+			return S_OK;
 		}
-		void hanle_authorization(ICoreWebView2WebResourceRequestedEventArgs* args)
+		HRESULT handle_authorization(ICoreWebView2WebResourceRequestedEventArgs* args)
 		{
 			wil::com_ptr <ICoreWebView2WebResourceRequest>			 request = nullptr;
 			wil::com_ptr <ICoreWebView2HttpRequestHeaders>			 headers = nullptr;
 
 			auto hr = args->get_Request(&request);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 			hr = request->get_Headers(&headers);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 			LPWSTR uri = nullptr;
 			request->get_Uri(&uri);
@@ -634,19 +614,20 @@ namespace WebView2
 			{
 				auto authV = new TCHAR[1000];
 				hr = headers->GetHeader(L"Authorization", &authV);
-				THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+				RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 				LOG_TRACE << __FUNCTION__ << " name=Authorization" << " value=" << authV;
 				auto& callback = m_callbacks[CallbackType::AuthenticationCompleted];
-				THROW_IF_NULL_ALLOC_MSG(callback, "function=%s message=unable to create callback", __func__);
+				RETURN_IF_NULL_ALLOC_MSG(callback, "function=%s message=unable to create callback", __func__);
 				RunAsync(callback);
 			}
+			return S_OK;
 		}
 
 		HRESULT onWebResourceRequested(ICoreWebView2* core_web_view2, ICoreWebView2WebResourceRequestedEventArgs* args)
 		{
 			DumpHeaders(args);
 			DumpCookieHeaders(args);
-			hanle_authorization(args);
+			handle_authorization(args);
 			return S_OK;
 		}
 		HRESULT onResponseReceived(ICoreWebView2* core_web_view2, ICoreWebView2WebResourceResponseReceivedEventArgs* args)
@@ -654,21 +635,21 @@ namespace WebView2
 			int statusCode;
 
 			wil::com_ptr<ICoreWebView2WebResourceRequest> webResourceRequest;
-			CHECK_FAILURE(args->get_Request(&webResourceRequest));
+			RETURN_IF_FAILED(args->get_Request(&webResourceRequest));
 			wil::com_ptr<ICoreWebView2WebResourceResponseView>webResourceResponse;
-			CHECK_FAILURE(args->get_Response(&webResourceResponse));
+			RETURN_IF_FAILED(args->get_Response(&webResourceResponse));
 
 			wil::com_ptr <ICoreWebView2HttpResponseHeaders> http_request_header;
 			wil::com_ptr <ICoreWebView2HttpHeadersCollectionIterator> it_headers;
 			wil::unique_cotaskmem_string					reasonPhrase;
 
-			CHECK_FAILURE(webResourceResponse->get_Headers(&http_request_header));
-			CHECK_FAILURE(webResourceResponse->get_StatusCode(&statusCode));
-			CHECK_FAILURE(webResourceResponse->get_ReasonPhrase(&reasonPhrase));
+			RETURN_IF_FAILED(webResourceResponse->get_Headers(&http_request_header));
+			RETURN_IF_FAILED(webResourceResponse->get_StatusCode(&statusCode));
+			RETURN_IF_FAILED(webResourceResponse->get_ReasonPhrase(&reasonPhrase));
 
 
 			HRESULT hr = http_request_header->GetIterator(&it_headers);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d", __func__, std::system_category().message(hr).data(), hr);
 
 			BOOL hasCurrent = FALSE;
 			std::wstring result = L"[";
@@ -678,10 +659,10 @@ namespace WebView2
 				wil::unique_cotaskmem_string name;
 				wil::unique_cotaskmem_string value;
 
-				CHECK_FAILURE(it_headers->GetCurrentHeader(&name, &value));
+				RETURN_IF_FAILED(it_headers->GetCurrentHeader(&name, &value));
 				result += L"{\"name\": " + Utility::EncodeQuote(name.get()) + L", \"value\": " + Utility::EncodeQuote(value.get()) + L"}";
 				BOOL hasNext = FALSE;
-				CHECK_FAILURE(it_headers->MoveNext(&hasNext));
+				RETURN_IF_FAILED(it_headers->MoveNext(&hasNext));
 				if (hasNext)
 				{
 					result += L", ";
@@ -719,7 +700,7 @@ namespace WebView2
 
 				}).Get(), &m_webResourceResponseReceivedToken);
 
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 			// NavigationCompleted handler
 			hr = webView_->add_NavigationCompleted(Microsoft::WRL::Callback<ICoreWebView2NavigationCompletedEventHandler>([this](
@@ -728,7 +709,7 @@ namespace WebView2
 				{
 					return (onNavigationCompleted(core_web_view2, args));
 				}).Get(), &m_navigationCompletedToken);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 
 			// NavigationStarting handler
@@ -738,10 +719,10 @@ namespace WebView2
 				{
 					return (onNavigationStarting(core_web_view2, args));
 				}).Get(), &m_navigationStartingToken);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 			// Add request filter
 			hr = webView_->AddWebResourceRequestedFilter(L"*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 			hr = webView_->add_WebResourceRequested(Microsoft::WRL::Callback<ICoreWebView2WebResourceRequestedEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2WebResourceRequestedEventArgs* args) -> HRESULT
@@ -754,7 +735,7 @@ namespace WebView2
 				webView_->QueryInterface(IID_PPV_ARGS(&WebView2));
 				hr = WebView2->get_CookieManager(&cookieManager_);
 			}
-			THROW_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
+			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
 
 			if (!url_.empty())
 				hr = webView_->Navigate(url_.c_str());
@@ -766,9 +747,11 @@ namespace WebView2
 		void RunAsync(CallbackFunc callback)
 		{
 			T* pT = static_cast<T*>(this);
-			THROW_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-			auto* task = new CallbackFunc(callback);
-			pT->PostMessage(MSG_RUN_ASYNC_CALLBACK, reinterpret_cast<WPARAM>(task), 0);
+			if (::IsWindow(pT->m_hWnd))
+			{
+				auto* task = new CallbackFunc(callback);
+				pT->PostMessage(MSG_RUN_ASYNC_CALLBACK, reinterpret_cast<WPARAM>(task), 0);
+			}
 		}
 	};
 

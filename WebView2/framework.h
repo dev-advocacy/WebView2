@@ -16,14 +16,15 @@
 #include <regex>
 #include <chrono>
 #include <future>
+#include <mutex>
 
 #include <ppl.h>
 #include <concurrent_unordered_map.h>
 #include <d2d1_3.h>
 #include <wininet.h>
 #include <dcomp.h>
-
 #include <wincodec.h>
+
 
 #include <atlbase.h>
 #include <atlapp.h>

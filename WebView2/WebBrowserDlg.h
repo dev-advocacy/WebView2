@@ -8,7 +8,6 @@
 #include "ComponentBase.h"
 #include "resource.h"
 
-
 #include <winrt/Windows.UI.Composition.h>
 #include <winrt/Windows.UI.ViewManagement.h>
 namespace winrtComp = winrt::Windows::UI::Composition;
@@ -57,12 +56,16 @@ public:
 protected:
 	HICON m_hIcon;
 	DWORD m_creationModeId = 0;
+	
+private:
 	wil::com_ptr<ICoreWebView2Environment> m_webViewEnvironment;
 	wil::com_ptr<ICoreWebView2Controller> m_controller;
 	wil::com_ptr<ICoreWebView2> m_webView;
 	wil::com_ptr<IDCompositionDevice> m_dcompDevice;
 	std::vector<std::unique_ptr<ComponentBase>> m_components;
 	winrt::Windows::UI::Composition::Compositor m_wincompCompositor{ nullptr };
+
+
 	HWND m_mainWindow = nullptr;
 	HINSTANCE g_hInstance;
 	static constexpr size_t s_maxLoadString = 100;

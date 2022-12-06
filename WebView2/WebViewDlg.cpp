@@ -14,8 +14,11 @@ CDlgWebView2::CDlgWebView2(std::wstring browerdirectory, std::wstring userdatedi
 LRESULT CDlgWebView2::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	CenterWindow(GetParent());
-	OnDlgInit(true);
-	return TRUE;
+	HRESULT hr = OnDlgInit(true);
+	if (FAILED(hr))
+		return hr;
+	
+	return 0L;
 }
 LRESULT CDlgWebView2::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {

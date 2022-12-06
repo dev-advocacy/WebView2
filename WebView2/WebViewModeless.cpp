@@ -15,7 +15,9 @@ CWebViewModeless::CWebViewModeless(std::wstring browerdirectory, std::wstring us
 LRESULT CWebViewModeless::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	CenterWindow(GetParent());
-	OnDlgInit();
+	HRESULT hr = OnDlgInit();
+	if (FAILED(hr))
+		return hr;
 	return TRUE;
 }
 LRESULT CWebViewModeless::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

@@ -99,7 +99,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -137,7 +137,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -172,7 +172,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -208,7 +208,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -231,6 +231,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="ProgressDlg.cpp" />
+    <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Utility.cpp" />
     <ClCompile Include="CheckFailure.cpp" />
     <ClCompile Include="logger.cpp" />
@@ -255,6 +257,8 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="ComponentBase.h" />
     <ClInclude Include="headersprop.h" />
+    <ClInclude Include="ProgressDlg.h" />
+    <ClInclude Include="Thread.h" />
     <ClInclude Include="Utility.h" />
     <ClInclude Include="CheckFailure.h" />
     <ClInclude Include="framework.h" />
