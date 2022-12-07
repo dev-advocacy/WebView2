@@ -26,7 +26,7 @@ namespace WebView2
 
 	public:
 		// Message map and handlers
-		BEGIN_MSG_MAP(CHTMLViewImpl)
+		BEGIN_MSG_MAP(CWebView2Impl)
 			MESSAGE_HANDLER(WM_PAINT, OnPaint)
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -759,7 +759,7 @@ namespace WebView2
 	class ATL_NO_VTABLE CCWebView2Impl : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CWebView2Impl< T >
 	{
 	public:
-		BEGIN_MSG_MAP(CCHTMLWebView2Impl)
+		BEGIN_MSG_MAP(CCWebView2Impl)
 			CHAIN_MSG_MAP(CWebView2Impl< T >)		
 		END_MSG_MAP()
 	};
