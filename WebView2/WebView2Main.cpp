@@ -22,6 +22,9 @@ public:
 	// thread proc
 	static DWORD WINAPI RunThread(LPVOID lpData)
 	{
+
+		HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 		CMessageLoop theLoop;
 		_Module.AddMessageLoop(&theLoop);
 

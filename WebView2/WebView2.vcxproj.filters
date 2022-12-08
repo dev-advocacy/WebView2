@@ -42,9 +42,6 @@
     <ClCompile Include="MainFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WebView2Impl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -75,9 +72,6 @@
     <ClCompile Include="WebViewModeless.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="ViewComponent.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="WebBrowserDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -85,6 +79,12 @@
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebView2Impl.cpp">
+      <Filter>Source Files\WebView2</Filter>
+    </ClCompile>
+    <ClCompile Include="CompositionHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,19 +137,16 @@
     <ClInclude Include="WebView2CompImpl.h">
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
     </ClInclude>
-    <ClInclude Include="ViewComponent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WebBrowserDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ComponentBase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProgressDlg.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="Thread.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebBrowserDlg.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="CompositionHost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

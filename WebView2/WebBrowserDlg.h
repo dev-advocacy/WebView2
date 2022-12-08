@@ -1,85 +1,137 @@
-
-// WebBrowserDlg.h : header file
-//
-
 #pragma once
-
 #include "pch.h"
-#include "ComponentBase.h"
 #include "resource.h"
 #include "logger.h"
 #include "Utility.h"
 
-#include <winrt/Windows.UI.Composition.h>
-#include <winrt/Windows.UI.ViewManagement.h>
-namespace winrtComp = winrt::Windows::UI::Composition;
 
 namespace WebView2
 {
 	template <class T>
-	class CWebView2Impl2
+	class CompositionHost1
 	{
+	private:
+		wil::com_ptr<ICoreWebView2Controller>				m_controller = nullptr;
+		wil::com_ptr<ICoreWebView2CompositionController>	m_compositionController = nullptr;
+		wil::com_ptr<IDCompositionDevice>					m_dcompDevice = nullptr;
+		wil::com_ptr<IDCompositionTarget>					m_dcompHwndTarget = nullptr;
+		wil::com_ptr<IDCompositionVisual>					m_dcompRootVisual = nullptr;
+		wil::com_ptr<IDCompositionVisual>					m_dcompWebViewVisual = nullptr;
+		CRect m_webViewBounds = {};
+		float m_webViewRatio = 1.0f;
+		float m_webViewScale = 1.0f;
+		bool m_isTrackingMouse = false;
+		bool m_isCapturingMouse = false;
+		EventRegistrationToken m_cursorChangedToken = {};
+
 	public:
 		// Message map and handlers
-		BEGIN_MSG_MAP(CWebView2Impl2)
-			MESSAGE_HANDLER(WM_PAINT, OnPaint)
+		BEGIN_MSG_MAP(CompositionHost1)
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
-			MESSAGE_HANDLER(WM_CREATE, OnCreate)
+			MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, onMouseEvent)
 		END_MSG_MAP()
 
-		//CWebView2Impl() = default;
-		CWebView2Impl2()
-		{
-			LOG_TRACE << __FUNCTION__;
-			WebView2::Utility::InitCOM();
-		}
-		CWebView2Impl2(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
-		{
-			if (!url.empty())
-				url_ = url;
-			if (!brower_directory.empty())
-				browserDirectory_ = brower_directory;
-			if (!user_data_directory.empty())
-				userDataDirectory_ = user_data_directory;
-		}
-		virtual ~CWebView2Impl2()
-		{
-			LOG_TRACE << __FUNCTION__;
-			CloseWebView();
-		}
-
-#pragma region windows_event
-		virtual BOOL PreTranslateMessage(MSG* pMsg)
-		{
-			return FALSE;
-		}
-		virtual LRESULT OnPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+		#pragma region windows_event
+		LRESULT onMouseEvent(UINT message, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			T* pT = static_cast<T*>(this);
-			if (::IsWindow(pT->m_hWnd))
-			{
-				CPaintDC dc(pT->m_hWnd);
-			}
-			return 0L;
-		}
-		HRESULT OnDlgInit(bool ismodeless = false)
-		{
-			T* pT = static_cast<T*>(this);
-			LOG_TRACE << __FUNCTION__;
-			if (pT->InitWebView() == false)
-			{
-				RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-			}
-			m_isModal = ismodeless;
-			return 0L;
-		}
-		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
-		{
 
-			LOG_TRACE << __FUNCTION__;
-			if (InitWebView() == false)
+			// Manually relay mouse messages to the WebView
+			if (m_dcompDevice)
 			{
-				RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+				POINT point;
+				POINTSTOPOINT(point, lParam);
+				if (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)
+				{
+					LOG_TRACE << __FUNCTION__ << " WM_MOUSEWHEEL " << "WM_MOUSEHWHEEL";
+
+					// Mouse wheel messages are delivered in screen coordinates.
+					// SendMouseInput expects client coordinates for the WebView, so convert
+					// the point from screen to client.
+					::ScreenToClient(pT->m_hWnd, &point);
+				}
+				// Send the message to the WebView if the mouse location is inside the
+				// bounds of the WebView, if the message is telling the WebView the
+				// mouse has left the client area, or if we are currently capturing
+				// mouse events.
+				bool isMouseInWebView = PtInRect(&m_webViewBounds, point);
+				if (isMouseInWebView || message == WM_MOUSELEAVE || m_isCapturingMouse)
+				{
+					DWORD mouseData = 0;
+
+					switch (message)
+					{
+					case WM_MOUSEWHEEL:
+					case WM_MOUSEHWHEEL:
+						mouseData = GET_WHEEL_DELTA_WPARAM(wParam);
+						break;
+					case WM_XBUTTONDBLCLK:
+					case WM_XBUTTONDOWN:
+					case WM_XBUTTONUP:
+						mouseData = GET_XBUTTON_WPARAM(wParam);
+						break;
+					case WM_MOUSEMOVE:
+						if (!m_isTrackingMouse)
+						{
+							// WebView needs to know when the mouse leaves the client area
+							// so that it can dismiss hover popups. TrackMouseEvent will
+							// provide a notification when the mouse leaves the client area.
+							TrackMouseEvents(TME_LEAVE);
+							m_isTrackingMouse = true;
+						}
+						break;
+					case WM_MOUSELEAVE:
+						m_isTrackingMouse = false;
+						break;
+					}
+
+					// We need to capture the mouse in case the user drags the
+					// mouse outside of the window bounds and we still need to send
+					// mouse messages to the WebView process. This is useful for
+					// scenarios like dragging the scroll bar or panning a map.
+					// This is very similar to the Pointer Message case where a
+					// press started inside of the WebView.
+					if (message == WM_LBUTTONDOWN || message == WM_MBUTTONDOWN ||
+						message == WM_RBUTTONDOWN || message == WM_XBUTTONDOWN)
+					{
+						if (isMouseInWebView && ::GetCapture() != pT->m_hWnd)
+						{
+							m_isCapturingMouse = true;
+							::SetCapture(pT->m_hWnd);
+						}
+					}
+					else if (message == WM_LBUTTONUP || message == WM_MBUTTONUP ||
+						message == WM_RBUTTONUP || message == WM_XBUTTONUP)
+					{
+						if (::GetCapture() == pT->m_hWnd)
+						{
+							m_isCapturingMouse = false;
+							::ReleaseCapture();
+						}
+					}
+
+					// Adjust the point from app client coordinates to webview client coordinates.
+					// WM_MOUSELEAVE messages don't have a point, so don't adjust the point.
+					if (message != WM_MOUSELEAVE)
+					{
+						point.x -= m_webViewBounds.left;
+						point.y -= m_webViewBounds.top;
+					}
+
+					m_compositionController->SendMouseInput(
+						static_cast<COREWEBVIEW2_MOUSE_EVENT_KIND>(message),
+						static_cast<COREWEBVIEW2_MOUSE_EVENT_VIRTUAL_KEYS>(GET_KEYSTATE_WPARAM(wParam)),
+						mouseData, point);
+					return true;
+				}
+				else if (message == WM_MOUSEMOVE && m_isTrackingMouse)
+				{
+					// When the mouse moves outside of the WebView, but still inside the app
+					// turn off mouse tracking and send the WebView a leave event.
+					m_isTrackingMouse = false;
+					TrackMouseEvents(TME_LEAVE | TME_CANCEL);
+					pT->onMouseEvent(WM_MOUSELEAVE, 0, 0, bHandled);
+				}
 			}
 			return 0L;
 		}
@@ -88,448 +140,268 @@ namespace WebView2
 		/// </summary>
 		LRESULT OnSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
-			ResizeToClientArea();
+			//LOG_TRACE << __FUNCTION__;
+			T* pT = static_cast<T*>(this);
+			if (::IsWindow(pT->m_hWnd))
+			{
+				RECT availableBounds = { 0 };
+				GetClientRect(pT->m_hWnd, &availableBounds);
+				put_bounds(availableBounds);
+
+			}
 			return 0;
 		}
 #pragma endregion windows_event
 
-
 	public:
-		std::wstring								url_;
-		std::wstring								browserDirectory_;
-		std::wstring								userDataDirectory_;
-		bool										m_isModal = false;
-	private:
-		wil::com_ptr<ICoreWebView2Environment>		webViewEnvironment_ = nullptr;
-		wil::com_ptr<ICoreWebView2>					webView_ = nullptr;
-		wil::com_ptr <ICoreWebView2_10>				m_webviewEventSource3 = nullptr;
-		wil::com_ptr<ICoreWebView2_2>				m_webviewEventSource2 = nullptr;
-		wil::com_ptr<ICoreWebView2Controller>		webController_ = nullptr;
-		wil::com_ptr<ICoreWebView2Settings>			webSettings_ = nullptr;
-		wil::com_ptr<ICoreWebView2CookieManager>	cookieManager_ = nullptr;
-		EventRegistrationToken						m_navigationStartingToken = {};
-		EventRegistrationToken						m_navigationCompletedToken = {};
-		EventRegistrationToken						m_documentTitleChangedToken = {};
-		EventRegistrationToken						webresourcerequestedToken_ = {};
-		EventRegistrationToken						m_webResourceResponseReceivedToken = {};
-		EventRegistrationToken						m_basicAuthenticationRequestedToken = {};
-		bool										m_isNavigating = false;
-
-
-	private:
-
-		HRESULT Navigate(std::wstring_view url)
+		CompositionHost1() = default;
+		~CompositionHost1() {}
+		/**
+		 * \brief : Initialize the class
+		 * \param hwnd 
+		 * \param controller 
+		 * \param compositionController 
+		 * \return S_OK or a failure
+		 */
+		HRESULT initialize(const HWND hwnd, wil::com_ptr<ICoreWebView2Controller> controller, wil::com_ptr<ICoreWebView2CompositionController> compositionController)
 		{
 			LOG_TRACE << __FUNCTION__;
-			RETURN_IF_NULL_ALLOC(webView_);
-			//return (navigate_to(url));
-			return S_OK;
-		}
-
-
-		/// <summary>
-		/// Create the WebView2 Environment
-		/// </summary>
-		/// <param name="result"></param>
-		/// <param name="environment"></param>
-		/// <returns></returns>
-		HRESULT OnCreateEnvironmentCompleted(HRESULT hr, ICoreWebView2Environment* environment)
-		{
-			LOG_TRACE << __FUNCTION__;
-			if (hr == S_OK)
+			if (controller && compositionController && IsWindow(hwnd))
 			{
-				T* pT = static_cast<T*>(this);
-				RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
-
-				wchar_t t[255];
-				pT->GetWindowText((LPTSTR)t, 255);
-
-				LOG_TRACE << "Hwnd=" << pT->m_hWnd << " caption=" << std::wstring(t);
-
-				RETURN_IF_FAILED(environment->QueryInterface(IID_PPV_ARGS(&webViewEnvironment_)));
-				RETURN_IF_FAILED(webViewEnvironment_->CreateCoreWebView2Controller(pT->m_hWnd, Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(this, &CWebView2Impl2::OnCreateWebViewControllerCompleted).Get()));
+				m_controller = controller;
+				m_compositionController = compositionController;
+				RETURN_IF_FAILED(InitializeComposition(hwnd));
+				RETURN_IF_FAILED(InitializeCursorCapture(hwnd));
 			}
 			else
 			{
-				RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
+				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(ERROR_INVALID_PARAMETER).data(), ERROR_INVALID_PARAMETER);
 			}
 			return S_OK;
 		}
-		/// <summary>
-		/// Initialize the webview2
-		/// </summary>
-		HRESULT InitWebView()
+		void put_bounds(RECT bounds)
 		{
-			LOG_TRACE << __FUNCTION__ << " Using user data directory:" << userDataDirectory_.data();
-
-			T* pT = static_cast<T*>(this);
-			RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
-			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
-			RETURN_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
-			std::wstring langid(Utility::GetUserMUI());
-			RETURN_IF_FAILED(options->put_Language(langid.c_str()));
-
-			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
-				userDataDirectory_.data(), options.Get(),
-				Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
-					this, &CWebView2Impl2::OnCreateEnvironmentCompleted).Get());
-
-			RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d\n", __func__, std::system_category().message(hr).data(), hr);
-			return (S_OK);
+			m_webViewBounds = bounds;
+			resize_web_view();
 		}
-		void CloseWebView()
+		CRect get_bounds() const
 		{
 			LOG_TRACE << __FUNCTION__;
-			if (this->webView_ && this->webController_ && this->webViewEnvironment_ && this->webSettings_)
+			CRect bounds={0};
+			HRESULT result = m_controller->get_Bounds(&bounds);
+			if (SUCCEEDED(result))
 			{
-				webView_->remove_NavigationCompleted(m_navigationCompletedToken);
-				webView_->remove_NavigationStarting(m_navigationStartingToken);
-				webView_->remove_DocumentTitleChanged(m_documentTitleChangedToken);
-				webView_ = nullptr;
-				webController_->Close();
-				webController_ = nullptr;
-				webSettings_ = nullptr;
-				webViewEnvironment_ = nullptr;
+				LOG_TRACE << "left=" << bounds.left << " top=" << bounds.top << " width="  << bounds.Width() << " height=" <<  bounds.Height();
 			}
-			else
-			{
-				LOG_TRACE << __FUNCTION__ << " Unable to release webview2";
-			}
+			return bounds;
 		}
-		/// <summary>
-		/// Resize the webview2
-		/// </summary>
-		/// <returns></returns>	
-		HRESULT ResizeToClientArea()
+	private:
+		/**
+		 * \brief : Initialize Microsoft DirectComposition
+		 * \param hwnd
+		 * \return S_OK or the failure
+		 */
+		HRESULT InitializeComposition(HWND hwnd)
 		{
-			if (webController_)
-			{
-				T* pT = static_cast<T*>(this);
-				RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
-				CRect bounds;
-				pT->GetClientRect(&bounds);
-
-
-				HRESULT hr = webController_->put_Bounds(bounds);
-				if (SUCCEEDED(hr))
-				{
-					BOOL isVisible = FALSE;
-					hr = webController_->get_IsVisible(&isVisible);
-					if (SUCCEEDED(hr) && isVisible == FALSE)
-					{
-						webController_->put_IsVisible(TRUE);
-						CRect rc;
-						webController_->get_Bounds(&rc);
-						LOG_TRACE << __FUNCTION__ << " width=" << rc.Width() << " height=" << rc.Height() << " visibility=" << isVisible;
-					}
-				}
-				else
-				{
-					LOG_TRACE << __FUNCTION__ << " hr=" << hr;
-				}
-			}
+			RETURN_IF_FAILED(DCompositionCreateDevice2(nullptr, IID_PPV_ARGS(&m_dcompDevice)));
+			RETURN_IF_FAILED(m_dcompDevice->CreateTargetForHwnd(hwnd, TRUE, &m_dcompHwndTarget));
+			RETURN_IF_FAILED(m_dcompDevice->CreateVisual(&m_dcompRootVisual));
+			RETURN_IF_FAILED(m_dcompHwndTarget->SetRoot(m_dcompRootVisual.get()));
+			RETURN_IF_FAILED(m_dcompDevice->CreateVisual(&m_dcompWebViewVisual));
+			RETURN_IF_FAILED(m_dcompRootVisual->AddVisual(m_dcompWebViewVisual.get(), TRUE, nullptr));
+			RETURN_IF_FAILED(m_compositionController->put_RootVisualTarget(m_dcompWebViewVisual.get()));
+			RETURN_IF_FAILED(m_dcompDevice->Commit());
 			return S_OK;
 		}
-		/// <summary>
-		/// Create the webview2 controller
-		/// </summary>
-		/// <param name="result"></param>
-		/// <param name="controller"></param>
-		/// <returns></returns>
-		HRESULT OnCreateWebViewControllerCompleted(HRESULT result, ICoreWebView2Controller* controller)
+		/**
+		 * \brief resize the WebView2 control
+		 */
+		void resize_web_view() const
 		{
-			LOG_TRACE << __FUNCTION__;
-			HRESULT hr = S_OK;
-
-			RETURN_IF_NULL_ALLOC(controller);
-
-			webController_ = controller;
-			RETURN_IF_FAILED(controller->get_CoreWebView2(&webView_));
-
-			RETURN_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource2));
-			RETURN_IF_FAILED(webView_->QueryInterface(&m_webviewEventSource3));
-
-			T* pT = static_cast<T*>(this);
-			RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
-
-			CRect bounds;
-			pT->GetClientRect(&bounds);
-			webController_->put_Bounds(bounds);
-
-			BOOL isVisible = TRUE;
-			webController_->put_IsVisible(isVisible);
-
-			RETURN_IF_FAILED(webView_->get_Settings(&webSettings_));
-			RETURN_IF_FAILED(RegisterEventHandlers());
-			ResizeToClientArea();
-			return S_OK;
-		}
-		HRESULT onNavigationCompleted(ICoreWebView2* core_web_view2, ICoreWebView2NavigationCompletedEventArgs* args)
-		{
-			m_isNavigating = false;
-
-			BOOL success;
-			HRESULT hr = args->get_IsSuccess(&success);
-			if (!success)
+			//LOG_TRACE << __FUNCTION__;
+			if (m_controller)
 			{
-				COREWEBVIEW2_WEB_ERROR_STATUS webErrorStatus{};
-				hr = args->get_WebErrorStatus(&webErrorStatus);
-				if (webErrorStatus == COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED)
-				{
-					LOG_TRACE << "function=" << __func__ << "COREWEBVIEW2_WEB_ERROR_STATUS_DISCONNECTED";
-					return webErrorStatus;
-				}
+				const SIZE webViewSize = { static_cast<LONG>((m_webViewBounds.right - m_webViewBounds.left) * m_webViewRatio * m_webViewScale),static_cast<LONG>((m_webViewBounds.bottom - m_webViewBounds.top) * m_webViewRatio * m_webViewScale) };
+				CRect desiredBounds = m_webViewBounds;
+				desiredBounds.bottom = static_cast<LONG>(webViewSize.cy + m_webViewBounds.top);
+				desiredBounds.right = static_cast<LONG>(webViewSize.cx + m_webViewBounds.left);
+				m_controller->put_Bounds(desiredBounds);
 			}
-			wil::unique_cotaskmem_string uri;
-			webView_->get_Source(&uri);
-			if (wcscmp(uri.get(), L"about:blank") == 0)
+		}
+		/**
+		* \brief : forward the mouse change to the WebView2
+		* \param hwnd
+		* \return S_OK or the failure
+		*/
+		HRESULT InitializeCursorCapture(HWND hwnd)
+		{
+			LOG_DEBUG << __FUNCTION__;
+			RETURN_IF_FAILED(
+				m_compositionController->add_CursorChanged(Microsoft::WRL::Callback<
+					ICoreWebView2CursorChangedEventHandler>([this, hwnd](ICoreWebView2CompositionController* sender,
+						IUnknown* args)-> HRESULT
+						{
+							HRESULT hr = S_OK;
+			UINT32 cursor_id;
+			m_compositionController->get_SystemCursorId(&cursor_id);
+			HCURSOR cursor = ::LoadCursor(nullptr, MAKEINTRESOURCE(cursor_id));
+			if (cursor == nullptr)
 			{
-				uri = wil::make_cotaskmem_string(L"");
+				hr = HRESULT_FROM_WIN32(GetLastError());
+			}
+
+			if (SUCCEEDED(hr))
+			{
+				SetClassLongPtr(hwnd, GCLP_HCURSOR, (LONG_PTR)cursor);
 			}
 			return hr;
-		}
-		HRESULT onNavigationStarting(ICoreWebView2* core_web_view2, ICoreWebView2NavigationStartingEventArgs* args)
-		{
-			wil::unique_cotaskmem_string uri;
-			args->get_Uri(&uri);
-			m_isNavigating = true;
-			url_ = uri.get();
+						}
+			).Get(), &m_cursorChangedToken));
 			return S_OK;
 		}
-
-
-		HRESULT handle_authorization(ICoreWebView2WebResourceRequestedEventArgs* args)
+		void TrackMouseEvents(DWORD mouseTrackingFlags)
 		{
-			wil::com_ptr <ICoreWebView2WebResourceRequest>			 request = nullptr;
-			wil::com_ptr <ICoreWebView2HttpRequestHeaders>			 headers = nullptr;
+			T* pT = static_cast<T*>(this);
 
-			auto hr = args->get_Request(&request);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-			hr = request->get_Headers(&headers);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-
-			LPWSTR uri = nullptr;
-			request->get_Uri(&uri);
-
-			BOOL auth_header = FALSE;
-
-			hr = headers->Contains(L"Authorization", &auth_header);
-			if (auth_header == TRUE && hr == S_OK)
-			{
-				auto authV = new TCHAR[1000];
-				hr = headers->GetHeader(L"Authorization", &authV);
-				RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-				LOG_TRACE << __FUNCTION__ << " name=Authorization" << " value=" << authV;
-			}
-			return S_OK;
+			TRACKMOUSEEVENT tme;
+			tme.cbSize = sizeof(tme);
+			tme.dwFlags = mouseTrackingFlags;
+			tme.hwndTrack = pT->m_hWnd;
+			tme.dwHoverTime = 0;
+			::TrackMouseEvent(&tme);
 		}
+	};
 
-		HRESULT onWebResourceRequested(ICoreWebView2* core_web_view2, ICoreWebView2WebResourceRequestedEventArgs* args)
+
+	template <class T>
+	class CWebView2Impl2 : public CompositionHost1<T>
+	{
+	public:
+		std::wstring										m_url;
+		std::wstring										browserDirectory_;
+		std::wstring										userDataDirectory_;
+		bool												m_isModal = false;
+	private:
+		HWND												m_hwnd = nullptr;
+		wil::com_ptr<ICoreWebView2Environment>				m_webViewEnvironment = nullptr;
+		wil::com_ptr<ICoreWebView2CompositionController>	m_compositionController = nullptr;
+		wil::com_ptr<ICoreWebView2Controller>				m_controller = nullptr;
+		wil::com_ptr<ICoreWebView2>							m_webView = nullptr;
+	public:
+		// Message map and handlers
+		BEGIN_MSG_MAP(CWebView2Impl2)
+			CHAIN_MSG_MAP(CompositionHost1<T>)
+			MESSAGE_HANDLER(WM_CREATE, OnCreate)
+			MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		END_MSG_MAP()
+
+		CWebView2Impl2() = default;
+		CWebView2Impl2(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
 		{
-			handle_authorization(args);
-			return S_OK;
+			if (!url.empty())
+				m_url = url;
+			if (!brower_directory.empty())
+				browserDirectory_ = brower_directory;
+			if (!user_data_directory.empty())
+				userDataDirectory_ = user_data_directory;
 		}
-		HRESULT onResponseReceived(ICoreWebView2* core_web_view2, ICoreWebView2WebResourceResponseReceivedEventArgs* args)
+		virtual ~CWebView2Impl2()
 		{
-			int statusCode;
-
-			wil::com_ptr<ICoreWebView2WebResourceRequest> webResourceRequest;
-			RETURN_IF_FAILED(args->get_Request(&webResourceRequest));
-			wil::com_ptr<ICoreWebView2WebResourceResponseView>webResourceResponse;
-			RETURN_IF_FAILED(args->get_Response(&webResourceResponse));
-
-			wil::com_ptr <ICoreWebView2HttpResponseHeaders> http_request_header;
-			wil::com_ptr <ICoreWebView2HttpHeadersCollectionIterator> it_headers;
-			wil::unique_cotaskmem_string					reasonPhrase;
-
-			RETURN_IF_FAILED(webResourceResponse->get_Headers(&http_request_header));
-			RETURN_IF_FAILED(webResourceResponse->get_StatusCode(&statusCode));
-			RETURN_IF_FAILED(webResourceResponse->get_ReasonPhrase(&reasonPhrase));
-
-
-			HRESULT hr = http_request_header->GetIterator(&it_headers);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d", __func__, std::system_category().message(hr).data(), hr);
-
-			BOOL hasCurrent = FALSE;
-			std::wstring result = L"[";
-
-			while (SUCCEEDED(it_headers->get_HasCurrentHeader(&hasCurrent)) && hasCurrent)
-			{
-				wil::unique_cotaskmem_string name;
-				wil::unique_cotaskmem_string value;
-
-				RETURN_IF_FAILED(it_headers->GetCurrentHeader(&name, &value));
-				result += L"{\"name\": " + Utility::EncodeQuote(name.get()) + L", \"value\": " + Utility::EncodeQuote(value.get()) + L"}";
-				BOOL hasNext = FALSE;
-				RETURN_IF_FAILED(it_headers->MoveNext(&hasNext));
-				if (hasNext)
-				{
-					result += L", ";
-				}
-			}
-			result += L"]";
-
-			//LOG_DEBUG << "response headers:" << result;
-
-			return S_OK;
+			LOG_TRACE << __FUNCTION__;
 		}
-
-
-		HRESULT RegisterEventHandlers()
+		#pragma region windows_event
+		LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
 			LOG_TRACE << __FUNCTION__;
 
-
-			HRESULT hr = m_webviewEventSource3->add_BasicAuthenticationRequested(Microsoft::WRL::Callback<ICoreWebView2BasicAuthenticationRequestedEventHandler>([this](
-				ICoreWebView2* sender,
-				ICoreWebView2BasicAuthenticationRequestedEventArgs* args) 	-> HRESULT
-				{
-
-					return S_OK;
-
-				}).Get(), &m_basicAuthenticationRequestedToken);
-
-
-			// response handler
-			hr = m_webviewEventSource2->add_WebResourceResponseReceived(Microsoft::WRL::Callback<ICoreWebView2WebResourceResponseReceivedEventHandler>([this](
-				ICoreWebView2* core_web_view2,
-				ICoreWebView2WebResourceResponseReceivedEventArgs* args)	-> HRESULT
-				{
-					return (onResponseReceived(core_web_view2, args));
-
-				}).Get(), &m_webResourceResponseReceivedToken);
-
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-
-			// NavigationCompleted handler
-			hr = webView_->add_NavigationCompleted(Microsoft::WRL::Callback<ICoreWebView2NavigationCompletedEventHandler>([this](
-				ICoreWebView2* core_web_view2,
-				ICoreWebView2NavigationCompletedEventArgs* args) -> HRESULT
-				{
-					return (onNavigationCompleted(core_web_view2, args));
-				}).Get(), &m_navigationCompletedToken);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-
-
-			// NavigationStarting handler
-			hr = webView_->add_NavigationStarting(Microsoft::WRL::Callback<ICoreWebView2NavigationStartingEventHandler>([this](
-				ICoreWebView2* core_web_view2,
-				ICoreWebView2NavigationStartingEventArgs* args) -> HRESULT
-				{
-					return (onNavigationStarting(core_web_view2, args));
-				}).Get(), &m_navigationStartingToken);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-			// Add request filter
-			hr = webView_->AddWebResourceRequestedFilter(L"*", COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL);
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-			hr = webView_->add_WebResourceRequested(Microsoft::WRL::Callback<ICoreWebView2WebResourceRequestedEventHandler>([this](
-				ICoreWebView2* core_web_view2,
-				ICoreWebView2WebResourceRequestedEventArgs* args) -> HRESULT
-				{
-					return (onWebResourceRequested(core_web_view2, args));
-				}).Get(), &webresourcerequestedToken_);
-			if (webView_ != nullptr)
+			T* pT = static_cast<T*>(this);
+			if (::IsWindow(pT->m_hWnd))
 			{
-				wil::com_ptr<ICoreWebView2_2> WebView2;
-				webView_->QueryInterface(IID_PPV_ARGS(&WebView2));
-				hr = WebView2->get_CookieManager(&cookieManager_);
+				m_hwnd = pT->m_hWnd;
+				HRESULT hr = InitializeWebView();
+				if (FAILED(hr))
+				{
+					RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
+				}
+				m_isModal = true;
 			}
-			RETURN_IF_FAILED_MSG(hr, "function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
-
-			if (!url_.empty())
-				hr = webView_->Navigate(url_.c_str());
-			else
-				hr = webView_->Navigate(L"about:blank");
-			return (hr);
+			return 0L;
 		}
 
+		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
+		{
+			LOG_TRACE << __FUNCTION__;
+			T* pT = static_cast<T*>(this);
+			if (::IsWindow(pT->m_hWnd))
+			{
+				m_hwnd = pT->m_hWnd;
+				InitializeWebView();
+			}
+			return 0L;
+		}
+		#pragma endregion windows_event
+	private:
+
+		HRESULT OnCreateCoreWebView2ControllerCompleted(HRESULT result, ICoreWebView2CompositionController* compositionController)
+		{
+			LOG_TRACE << __FUNCTION__;
+			if (result != S_OK)
+				return result;
+			m_compositionController = compositionController;
+			RETURN_IF_FAILED(m_compositionController->QueryInterface(IID_PPV_ARGS(&m_controller)));
+			RETURN_IF_FAILED(m_controller->get_CoreWebView2(&m_webView));
+			RETURN_IF_FAILED(m_controller->put_IsVisible(true));
+			RETURN_IF_FAILED(m_webView->Navigate(m_url.c_str()));
+			RETURN_IF_FAILED((static_cast<T*>(this))->initialize(m_hwnd, m_controller, m_compositionController));
+			CRect bounds;
+			GetClientRect(m_hwnd , &bounds);
+			(static_cast<T*>(this))->put_bounds(bounds);
+			return S_OK;
+		}
+
+		HRESULT InitializeWebView()
+		{
+			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
+				 browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
+									userDataDirectory_.data(),
+				    options.Get(),
+					Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
+						HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
+						{
+							HRESULT hr = S_OK;
+							m_webViewEnvironment = environment;
+							wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
+							if (webViewEnvironment3)
+							{
+								auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(
+									m_hwnd,
+									Microsoft::WRL::Callback<
+									ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
+										[this](HRESULT hr, ICoreWebView2CompositionController* compositionController)
+										-> HRESULT
+										{
+											if (SUCCEEDED(hr)) {
+
+												hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
+											}
+											else
+												RETURN_IF_FAILED(hr);
+
+								return hr;
+										})
+									.Get());
+							}
+							return hr;
+						}).Get());
+				return hr;
+		}
 	};
 
-	template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlWinTraits>
-	class ATL_NO_VTABLE CCWebView2Impl2 : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CWebView2Impl2< T >
-	{
-	public:
-		BEGIN_MSG_MAP(CCWebView2Impl2)
-			CHAIN_MSG_MAP(CWebView2Impl2< T >)
-		END_MSG_MAP()
-	};
 
 }
 
 
 
 
-
-// CWebBrowserDlg dialog
-class CWebBrowserDlg : public CDialogImpl<CWebBrowserDlg>
-{
-public:
-	enum { IDD = IDD_DIALOG_WEB_VIEW };
-	CWebBrowserDlg(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url);
-	CWebBrowserDlg() {}
-
-
-	void InitializeWebView();
-	void CloseWebView(bool cleanupUserDataFolder = false);
-	HRESULT OnCreateEnvironmentCompleted(HRESULT result, ICoreWebView2Environment* environment);
-	HRESULT OnCreateCoreWebView2ControllerCompleted(HRESULT result, ICoreWebView2Controller* controller);
-    void WebView2Explorer(LPDISPATCH pDisp, VARIANT * URL);
-    HRESULT WebView2MessageHandler(PWSTR *s_Message);
-    HRESULT WebView2MessageProcess(ICoreWebView2 * webview, ICoreWebView2WebMessageReceivedEventArgs * args);
-	void RunAsync(std::function<void(void)> callback);
-	void ResizeEverything();
-	HRESULT DCompositionCreateDevice2(IUnknown* renderingDevice, REFIID riid, void** ppv);
-
-	void OnSize(UINT a, int b, int c);
-
-	ICoreWebView2Controller* GetWebViewController()
-	{
-		return m_controller.get();
-	}
-	ICoreWebView2* GetWebView()
-	{
-		return m_webView.get();
-	}
-	ICoreWebView2Environment* GetWebViewEnvironment()
-	{
-		return m_webViewEnvironment.get();
-	}
-	HWND GetMainWindow()
-	{
-		return this->m_hWnd;
-	}
-
-	// Implementation
-protected:
-	HICON m_hIcon;
-	DWORD m_creationModeId = 0;
-	
-private:
-	wil::com_ptr<ICoreWebView2Environment> m_webViewEnvironment;
-	wil::com_ptr<ICoreWebView2Controller> m_controller;
-	wil::com_ptr<ICoreWebView2> m_webView;
-	wil::com_ptr<IDCompositionDevice> m_dcompDevice;
-	std::vector<std::unique_ptr<ComponentBase>> m_components;
-	winrt::Windows::UI::Composition::Compositor m_wincompCompositor{ nullptr };
-
-
-	HWND m_mainWindow = nullptr;
-	HINSTANCE g_hInstance;
-	static constexpr size_t s_maxLoadString = 100;
-	template <class ComponentType, class... Args> void NewComponent(Args&&... args);
-
-	template <class ComponentType> ComponentType* GetComponent();
-
-	BEGIN_MSG_MAP(CWebBrowserDlg)
-		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-	END_MSG_MAP()
-
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-};
 

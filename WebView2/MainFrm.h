@@ -19,7 +19,7 @@ public:
 
 	CCommandBarCtrl m_CmdBar;
 	std::unique_ptr <CWebView2>			m_webview2 = nullptr;
-	std::unique_ptr<CWebViewModeless>	m_dlgwebwiew2 = nullptr;
+	/*std::unique_ptr<CWebViewModeless>	m_dlgwebwiew2 = nullptr;*/
 	ProfileInformation_t				m_webviewprofile;
 	
 	virtual BOOL PreTranslateMessage(MSG* pMsg);

@@ -15,6 +15,7 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
 	return m_webview2->PreTranslateMessage(pMsg);
+	return FALSE;
 }
 
 BOOL CMainFrame::OnIdle()
@@ -120,7 +121,7 @@ LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CDlgWebView2 dlg(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
+	CDlgWebView2 dlg(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://www.google.fr");
 	dlg.DoModal();
 	
 	return 0;
@@ -143,12 +144,12 @@ LRESULT CMainFrame::OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD
 
 LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	if (m_dlgwebwiew2 == nullptr)
+	/*if (m_dlgwebwiew2 == nullptr)
 		m_dlgwebwiew2 = std::make_unique<CWebViewModeless>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	if (m_dlgwebwiew2 != nullptr && ::IsWindow(m_dlgwebwiew2->m_hWnd) == FALSE)
 	{
 		m_dlgwebwiew2->Create(this->m_hWnd);
 		m_dlgwebwiew2->ShowWindow(SW_SHOW);
-	}
+	}*/
 	return 0;
 }

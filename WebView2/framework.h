@@ -17,14 +17,7 @@
 #include <chrono>
 #include <future>
 #include <mutex>
-
-#include <ppl.h>
-#include <concurrent_unordered_map.h>
-#include <d2d1_3.h>
-#include <wininet.h>
-#include <dcomp.h>
-#include <wincodec.h>
-
+#include <unordered_set>
 
 #include <atlbase.h>
 #include <atlapp.h>
@@ -41,14 +34,12 @@
 #include <atlcrack.h>
 #include <atlddx.h>
 #include <atlimage.h>
-
-extern CAppModule _Module;
-
 #include <atlwin.h>
-
 #include <atlframe.h>
 #include <atlctrls.h>
 #include <atldlgs.h>
+
+extern CAppModule _Module;
 
 #include <wil/com.h>
 #include <wil/resource.h>
@@ -63,8 +54,6 @@ extern CAppModule _Module;
 #include <cpprest/json.h>
 
 // logs
-
-
 #include <boost/log/trivial.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/common.hpp>
@@ -86,6 +75,20 @@ extern CAppModule _Module;
 #include <boost/log/sinks/text_ipc_message_queue_backend.hpp>
 #include <boost/log/utility/ipc/reliable_message_queue.hpp>
 #include <boost/log/utility/ipc/object_name.hpp>
+
+//Windows
+#include <ppl.h>
+#include <concurrent_unordered_map.h>
+#include <d2d1_3.h>
+#include <wininet.h>
+#include <dcomp.h>
+#include <wincodec.h>
+#include <DispatcherQueue.h>
+#include <winrt/Windows.Foundation.Collections.h>
+#include <windows.ui.composition.interop.h>
+#include <winrt/Windows.UI.Composition.Desktop.h>
+#include <winrt/Windows.UI.Composition.h>
+#include <winrt/Windows.UI.ViewManagement.h>
 
 
 //namespaces

@@ -4,9 +4,10 @@
 
 #pragma once
 
-#include "WebView2Impl.h"
+#include "WebBrowserDlg.h"
+//#include "WebView2Impl.h"
 
-class CWebView2 : public CWindowImpl<CWebView2>, public WebView2::CWebView2Impl<CWebView2>
+class CWebView2 : public CWindowImpl<CWebView2>, public WebView2::CWebView2Impl2<CWebView2>
 {
 public:
 	DECLARE_WND_CLASS(NULL)
@@ -22,7 +23,7 @@ public:
 
 	BEGIN_MSG_MAP(CWebView2)
 		MESSAGE_HANDLER(WM_PAINT, OnPaint)
-		CHAIN_MSG_MAP(CWebView2Impl<CWebView2>)
+		CHAIN_MSG_MAP(CWebView2Impl2<CWebView2>)
 	END_MSG_MAP()
 
 	// Handler prototypes (uncomment arguments if needed):

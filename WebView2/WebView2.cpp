@@ -16,7 +16,7 @@
 CWebView2::CWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url)
 {
 	userDataDirectory_ = userdatedirectory;
-	url_ = url;
+	m_url = url;
 	browserDirectory_ = browerdirectory;
 }
 CWebView2::~CWebView2()
@@ -25,8 +25,8 @@ CWebView2::~CWebView2()
 }
 BOOL CWebView2::PreTranslateMessage(MSG* pMsg)
 {
-	if (CWebView2Impl<CWebView2>::PreTranslateMessage(pMsg))
-		return TRUE;
+	//if (CWebView2Impl2<CWebView2>::PreTranslateMessage(pMsg))
+		//return TRUE;
 
 	return 0L;
 }

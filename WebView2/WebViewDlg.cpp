@@ -6,19 +6,15 @@
 CDlgWebView2::CDlgWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url)
 {
 	userDataDirectory_ = userdatedirectory;
-	url_ = url;
+	m_url = url;
 	browserDirectory_ = browerdirectory;
 }
 
 
-LRESULT CDlgWebView2::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT CDlgWebView2::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 {
 	CenterWindow(GetParent());
-	HRESULT hr = OnDlgInit(true);
-	if (FAILED(hr))
-		return hr;
-	
-	return 0L;
+	return (CWebView2Impl2<CDlgWebView2>::OnInitDialog(uMsg,wParam,lParam,bHandled));
 }
 LRESULT CDlgWebView2::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
