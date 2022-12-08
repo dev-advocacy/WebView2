@@ -6,10 +6,80 @@
 #include "Utility.h"
 #include "headersprop.h"
 
+constexpr UINT WM_RUN_FUNCTOR = WM_USER + 1;
 
 
 namespace WebView2
 {
+	// Base class of functors that must run on the UI thread.
+	class UIFunctorBase
+	{
+	public:
+		UIFunctorBase()
+			: _stopped(false)
+		{}
+
+		virtual ~UIFunctorBase() = default;
+
+		// Called from a background thread thread. Blocks until the Windows message handler completes.
+		void PostToQueue(HWND wnd)
+		{
+			{	// Reset stop event.
+				std::lock_guard guard(_mutex);
+				_stopped = false;
+			}
+
+			::PostMessageW(wnd, WM_RUN_FUNCTOR, reinterpret_cast<WPARAM>(this), 0);
+
+			// Wait for the messaged to be processed on the UI thread.
+			std::unique_lock lock(_mutex);
+			_stopEvent.wait(lock, [this]() { return _stopped; });
+		}
+
+		// Called by the custom Windows message handler => Runs on the UI thread.
+		// Override in derived classes.
+		virtual void Invoke() = 0;
+
+		// Called by the custom Windows message handler ==> Signals that Invoke() has completed.
+		void SignalComplete()
+		{
+			{
+				std::lock_guard guard(_mutex);
+				_stopped = true;
+			}
+
+			_stopEvent.notify_all();
+		}
+
+	protected:
+		std::mutex _mutex;
+		std::condition_variable _stopEvent;
+		bool _stopped;
+	};
+
+
+	// Concrete class template for functors that must run ont he UI thread.
+	// The constructor supports lambda with capture clauses.
+	template <typename T>
+	class UIFunctor : public UIFunctorBase
+	{
+	public:
+		UIFunctor<T>(T&& lambda)
+			: _lambda(lambda)
+		{}
+
+		virtual ~UIFunctor() = default;
+
+		virtual void Invoke() override
+		{
+			_lambda();
+		}
+
+	protected:
+		T _lambda;
+	};
+
+
 	template <class T>
 	class CWebView2Impl
 	{
@@ -31,6 +101,7 @@ namespace WebView2
 			MESSAGE_HANDLER(WM_SIZE, OnSize)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(MSG_RUN_ASYNC_CALLBACK, OnCallBack)
+			MESSAGE_HANDLER(WM_RUN_FUNCTOR, OnRunFunctor)
 		END_MSG_MAP()
 
 		//CWebView2Impl() = default;
@@ -42,6 +113,36 @@ namespace WebView2
 			m_callbacks[CallbackType::NavigationCompleted] = nullptr;
 			m_callbacks[CallbackType::AuthenticationCompleted] = nullptr;
 			m_callbacks[CallbackType::NavigationStarting] = nullptr;
+
+			SetCreationCompletedCallback([](CWebView2Impl<T>* parent)
+				{
+					LOG_TRACE << "CreationCompletedCallback";
+					T* wnd = static_cast<T*>(parent);
+					::MessageBoxW(wnd->m_hWnd, L"Creation completed", L"DEBUG", MB_OK | MB_ICONINFORMATION);
+				});
+
+			SetAuthenticationCompletedCallback([](CWebView2Impl<T>* parent)
+				{
+					LOG_TRACE << "AuthenticationCompletedCallback";
+					T* wnd = static_cast<T*>(parent);
+					::MessageBoxW(wnd->m_hWnd, L"Authentication completed", L"DEBUG", MB_OK | MB_ICONINFORMATION);
+				});
+
+			SetNavigationStartingCallback([](CWebView2Impl<T>* parent, std::wstring uri)
+				{
+					LOG_TRACE << "NavigationStartingCallback" << L" URI=" << uri;
+					T* wnd = static_cast<T*>(parent);
+					::MessageBoxW(wnd->m_hWnd, std::format(L"Navigation starting to URI {}", uri).c_str(),
+						L"DEBUG", MB_OK | MB_ICONINFORMATION);
+				});
+
+			SetNavigationCompletedCallback([](CWebView2Impl<T>* parent, std::wstring uri)
+				{
+					LOG_TRACE << "NavigationCompletedCallback" << L" URI=" << uri;
+					T* wnd = static_cast<T*>(parent);
+					::MessageBoxW(wnd->m_hWnd, std::format(L"Navigation completed to URI {}", uri).c_str(),
+						L"DEBUG", MB_OK | MB_ICONINFORMATION);
+				});
 		}
 		CWebView2Impl(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
 		{
@@ -57,13 +158,36 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 			CloseWebView();
 		}
-		LRESULT	OnCallBack(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+		LRESULT	OnCallBack(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			auto* task = reinterpret_cast<CallbackFunc*>(wParam);
 			(*task)();
 			delete task;
 			return 0;
 		}
+
+
+		LRESULT	OnRunFunctor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+		{
+			auto* functor = reinterpret_cast<UIFunctorBase*>(wParam);
+
+			if (functor == nullptr)
+				return -1; // Error while posting the message. 
+
+			functor->Invoke();
+			functor->SignalComplete();
+
+			// Clean up future<void> instances for fire-and-forget operations that have completed.
+			std::lock_guard guard(_asyncResultsMutex);
+			_asyncResults.remove_if([](std::future<void>& value)
+				{
+					return value.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+				});
+
+			return 0;
+		}
+
+
 		void RegisterCallback(CallbackType const type, CallbackFunc callback)
 		{
 			m_callbacks[type] = callback;
@@ -315,6 +439,20 @@ namespace WebView2
 		bool										m_isNavigating = false;
 		std::map<CallbackType, CallbackFunc>		m_callbacks;
 
+		std::function<void(CWebView2Impl<T>*)> _creationCompletedCallback;
+		std::function<void(CWebView2Impl<T>*)> _authenticationCompletedCallback;
+		std::function<void(CWebView2Impl<T>*, std::wstring)> _navigationStartingCallback;
+		std::function<void(CWebView2Impl<T>*, std::wstring)> _navigationCompletedCallback;
+
+		std::list<std::future<void>> _asyncResults;
+		std::mutex _asyncResultsMutex;
+
+	public:
+		void SetCreationCompletedCallback(decltype(_creationCompletedCallback) callback)				{ _creationCompletedCallback = callback; }
+		void SetAuthenticationCompletedCallback(decltype(_authenticationCompletedCallback) callback)	{ _authenticationCompletedCallback = callback; }
+		void SetNavigationStartingCallback(decltype(_navigationStartingCallback) callback)				{ _navigationStartingCallback = callback; }
+		void SetNavigationCompletedCallback(decltype(_navigationCompletedCallback) callback)			{ _navigationCompletedCallback = callback; }
+
 
 	private:
 
@@ -466,9 +604,28 @@ namespace WebView2
 			RETURN_IF_FAILED(webView_->get_Settings(&webSettings_));
 			RETURN_IF_FAILED(RegisterEventHandlers());
 			ResizeToClientArea();
-			auto& callback = m_callbacks[CallbackType::CreationCompleted];
-			RETURN_IF_NULL_ALLOC(callback);
-			RunAsync(callback);
+
+			//TODEL
+			//auto& callback = m_callbacks[CallbackType::CreationCompleted];
+			//RETURN_IF_NULL_ALLOC(callback);
+			//RunAsync(callback);
+
+			auto asyncResult = std::async(std::launch::async, [this]()
+				{
+					UIFunctor functor([this]()
+						{
+							if (_creationCompletedCallback)
+								_creationCompletedCallback(this);
+						});
+					T* pT = static_cast<T*>(this);
+					functor.PostToQueue(pT->m_hWnd);
+				});
+
+			// Need to keep alive future<void> instance until fire-and-forget async operation completes.
+			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
+			std::lock_guard guard(_asyncResultsMutex);
+			_asyncResults.push_back(std::move(asyncResult));
+
 			return S_OK;
 		}
 		HRESULT onNavigationCompleted(ICoreWebView2* core_web_view2, ICoreWebView2NavigationCompletedEventArgs* args)
@@ -494,9 +651,28 @@ namespace WebView2
 				uri = wil::make_cotaskmem_string(L"");
 			}
 
-			auto& callback = m_callbacks[CallbackType::NavigationCompleted];
-			if (callback != nullptr)
-				RunAsync(callback);
+			//TODEL
+			//auto& callback = m_callbacks[CallbackType::NavigationCompleted];
+			//if (callback != nullptr)
+			//	RunAsync(callback);
+
+			std::wstring uriStr = uri.get();
+			auto asyncResult = std::async(std::launch::async, [this, uriStr]()
+				{
+					UIFunctor functor([this, uriStr]()
+						{
+							if (_navigationCompletedCallback)
+								_navigationCompletedCallback(this, uriStr);
+						});
+					T* pT = static_cast<T*>(this);
+					functor.PostToQueue(pT->m_hWnd);
+				});
+
+			// Need to keep alive future<void> instance until fire-and-forget async operation completes.
+			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
+			std::lock_guard guard(_asyncResultsMutex);
+			_asyncResults.push_back(std::move(asyncResult));
+
 			return hr;
 		}
 		HRESULT onNavigationStarting(ICoreWebView2* core_web_view2, ICoreWebView2NavigationStartingEventArgs* args)
@@ -506,9 +682,28 @@ namespace WebView2
 			m_isNavigating = true;
 			url_ = uri.get();
 
-			auto& callback = m_callbacks[CallbackType::NavigationStarting];
-			THROW_IF_NULL_ALLOC(callback);
-			RunAsync(callback);
+			//TODEL
+			//auto& callback = m_callbacks[CallbackType::NavigationStarting];
+			//THROW_IF_NULL_ALLOC(callback);
+			//RunAsync(callback);
+
+			std::wstring uriStr = uri.get();
+			auto asyncResult = std::async(std::launch::async, [this, uriStr]()
+				{
+					UIFunctor functor([this, uriStr]()
+						{
+							if (_navigationStartingCallback)
+								_navigationStartingCallback(this, uriStr);
+						});
+					T* pT = static_cast<T*>(this);
+					functor.PostToQueue(pT->m_hWnd);
+				});
+
+			// Need to keep alive future<void> instance until fire-and-forget async operation completes.
+			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
+			std::lock_guard guard(_asyncResultsMutex);
+			_asyncResults.push_back(std::move(asyncResult));
+
 			return S_OK;
 		}
 
