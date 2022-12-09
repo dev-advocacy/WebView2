@@ -10,7 +10,7 @@
 #include "WebViewDlg.h"
 #include "WebViewModeless.h"
 #include "WebView2Impl2.h"
-
+#include "UrlCombo.h"
 
 class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CUpdateUI<CMainFrame>,public CMessageFilter, public CIdleHandler
 {
@@ -21,9 +21,11 @@ public:
 	std::unique_ptr <CWebView2>			m_webview2 = nullptr;
 	/*std::unique_ptr<CWebViewModeless>	m_dlgwebwiew2 = nullptr;*/
 	ProfileInformation_t				m_webviewprofile;
+	CURLCombo							m_wndCombo;
 	
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	virtual BOOL OnIdle();
+	HWND CreateAddressBarCtrl(HWND hWndParent);
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)
 		UPDATE_ELEMENT(ID_VIEW_TOOLBAR, UPDUI_MENUPOPUP)
@@ -45,6 +47,8 @@ public:
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELESSDIALOGUSINGDIRECTCOMPOSITION, OnScenarioWebView2ModalDirectComp)
+
+		MESSAGE_HANDLER(MSG_NAVIGATE_CALLBACK, OnNavigate)
 		
 
 		REFLECT_NOTIFICATIONS()
@@ -70,7 +74,8 @@ public:
 
 	LRESULT OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
 	LRESULT OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	
 };

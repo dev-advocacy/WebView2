@@ -13,6 +13,8 @@ BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
 	if (CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg))
 		return TRUE;
+	if (m_wndCombo.PreTranslateMessage(pMsg))
+		return TRUE;
 	return m_webview2->PreTranslateMessage(pMsg);
 	return FALSE;
 }
@@ -23,10 +25,19 @@ BOOL CMainFrame::OnIdle()
 	return FALSE;
 }
 
+HWND CMainFrame::CreateAddressBarCtrl(HWND hWndParent)
+{
+	RECT rc = { 50, 0, 300, 100 };
+	THROW_LAST_ERROR_IF_NULL(m_wndCombo.Create(hWndParent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT));
+	m_wndCombo.SetFrame(this->m_hWnd);
+	return m_wndCombo;
+}
+
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+	HWND hWndAddressBar = CreateAddressBarCtrl(m_hWnd);
 	// attach menu
 	m_CmdBar.AttachMenu(GetMenu());
 	// load command bar images
@@ -39,6 +50,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+	AddSimpleReBarBand(hWndAddressBar, _T("Address"), TRUE);
 
 	CreateSimpleStatusBar();
 
@@ -150,5 +162,16 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 		m_dlgwebwiew2->Create(this->m_hWnd);
 		m_dlgwebwiew2->ShowWindow(SW_SHOW);
 	}*/
+	return 0;
+}
+
+LRESULT CMainFrame::OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+{
+	std::wstring text_url = reinterpret_cast<wchar_t*>(lParam);
+
+	if (!text_url.empty())
+	{		
+		m_webview2->navigate(text_url);
+	}
 	return 0;
 }

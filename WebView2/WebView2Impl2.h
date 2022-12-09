@@ -4,6 +4,7 @@
 #include "logger.h"
 #include "CompositionHost.h"
 #include "WebViewEvents.h"
+#include "WebViewAuthentication.h"
 
 
 namespace WebView2
@@ -23,6 +24,7 @@ namespace WebView2
 		wil::com_ptr<ICoreWebView2Controller>				m_controller = nullptr;
 		wil::com_ptr<ICoreWebView2>							m_webView = nullptr;
 		std::unique_ptr<webview2_events>					m_webview2_events = nullptr;
+		std::unique_ptr<webview2_authentication_events>		m_webview2_authentication_events = nullptr;
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CWebView2Impl2)
@@ -34,6 +36,7 @@ namespace WebView2
 		CWebView2Impl2()
 		{
 			m_webview2_events = std::make_unique<webview2_events>();
+			m_webview2_authentication_events = std::make_unique<webview2_authentication_events>();
 		};
 		CWebView2Impl2(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
 		{
@@ -57,11 +60,7 @@ namespace WebView2
 			if (::IsWindow(pT->m_hWnd))
 			{
 				m_hwnd = pT->m_hWnd;
-				HRESULT hr = InitializeWebView();
-				if (FAILED(hr))
-				{
-					RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
-				}
+				RETURN_IF_FAILED(InitializeWebView());
 				m_is_modal = true;
 			}
 			return 0L;
@@ -79,8 +78,24 @@ namespace WebView2
 			return 0L;
 		}
 		#pragma endregion windows_event
-	private:
 
+		#pragma region WebView2_event
+
+		HRESULT navigate(std::wstring url)
+		{
+			if (m_webView)
+			{
+				RETURN_IF_FAILED(m_webView->Navigate(url.c_str()));
+			}
+			else
+				return ERROR_INVALID_ADDRESS;
+
+			return S_OK;
+		}
+
+		#pragma endregion WebView2_event
+
+	private:
 		HRESULT OnCreateCoreWebView2ControllerCompleted(HRESULT result, ICoreWebView2CompositionController* compositionController)
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -89,14 +104,18 @@ namespace WebView2
 			m_compositionController = compositionController;
 			RETURN_IF_FAILED(m_compositionController->QueryInterface(IID_PPV_ARGS(&m_controller)));
 			RETURN_IF_FAILED(m_controller->get_CoreWebView2(&m_webView));
-			RETURN_IF_FAILED(m_controller->put_IsVisible(true));
-			RETURN_IF_FAILED(m_webView->Navigate(m_url.c_str()));
+			RETURN_IF_FAILED(m_webview2_events->initialize(m_hwnd, m_webView, m_controller));
+			RETURN_IF_FAILED(m_webview2_authentication_events->initialize(m_hwnd, m_webView, m_controller));
+
 			RETURN_IF_FAILED((static_cast<T*>(this))->initialize(m_hwnd, m_controller, m_compositionController));
 			CRect bounds;
 			GetClientRect(m_hwnd , &bounds);
+
+			RETURN_IF_FAILED(m_controller->put_IsVisible(true));
+			
+			RETURN_IF_FAILED(m_webView->Navigate(m_url.c_str()));
 			(static_cast<T*>(this))->put_bounds(bounds);
 
-			m_webview2_events->initialize(m_hwnd, m_webView, m_controller);
 			return S_OK;
 		}
 

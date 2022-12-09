@@ -81,7 +81,7 @@
     <ClCompile Include="WebView2Impl.cpp">
       <Filter>Source Files\WebView2</Filter>
     </ClCompile>
-    <ClCompile Include="WebViewEvents.cpp">
+    <ClCompile Include="UrlCombo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -144,6 +144,12 @@
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
     </ClInclude>
     <ClInclude Include="WebViewEvents.h">
+      <Filter>Header Files\WebView2\WebView2Impl</Filter>
+    </ClInclude>
+    <ClInclude Include="UrlCombo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebViewAuthentication.h">
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
     </ClInclude>
   </ItemGroup>
