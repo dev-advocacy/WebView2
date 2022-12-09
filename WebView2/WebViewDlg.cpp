@@ -5,9 +5,9 @@
 
 CDlgWebView2::CDlgWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url)
 {
-	userDataDirectory_ = userdatedirectory;
+	m_user_data_directory = userdatedirectory;
 	m_url = url;
-	browserDirectory_ = browerdirectory;
+	m_browser_directory = browerdirectory;
 }
 
 
@@ -19,7 +19,7 @@ LRESULT CDlgWebView2::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 LRESULT CDlgWebView2::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 
-	m_isModal == true ? EndDialog(wID) : DestroyWindow();
+	m_is_modal == true ? EndDialog(wID) : DestroyWindow();
 	return 0;
 }
 

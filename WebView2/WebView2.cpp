@@ -15,9 +15,9 @@
 /// <param name="url"></param>
 CWebView2::CWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url)
 {
-	userDataDirectory_ = userdatedirectory;
+	m_user_data_directory = userdatedirectory;
 	m_url = url;
-	browserDirectory_ = browerdirectory;
+	m_browser_directory = browerdirectory;
 }
 CWebView2::~CWebView2()
 {

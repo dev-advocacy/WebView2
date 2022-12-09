@@ -8,7 +8,7 @@
 namespace WebView2
 {
 	template <class T>
-	class CompositionHost1
+	class CompositionHost
 	{
 	private:
 		wil::com_ptr<ICoreWebView2Controller>				m_controller = nullptr;
@@ -23,7 +23,6 @@ namespace WebView2
 		bool m_isTrackingMouse = false;
 		bool m_isCapturingMouse = false;
 		EventRegistrationToken m_cursorChangedToken = {};
-
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CompositionHost1)
@@ -152,10 +151,12 @@ namespace WebView2
 			return 0;
 		}
 #pragma endregion windows_event
-
 	public:
-		CompositionHost1() = default;
-		~CompositionHost1() {}
+		CompositionHost() = default;
+		~CompositionHost()
+		{
+			delete_composition();
+		}
 		/**
 		 * \brief : Initialize the class
 		 * \param hwnd 
@@ -170,7 +171,7 @@ namespace WebView2
 			{
 				m_controller = controller;
 				m_compositionController = compositionController;
-				RETURN_IF_FAILED(InitializeComposition(hwnd));
+				RETURN_IF_FAILED(initialize_composition(hwnd));
 				RETURN_IF_FAILED(InitializeCursorCapture(hwnd));
 			}
 			else
@@ -201,8 +202,10 @@ namespace WebView2
 		 * \param hwnd
 		 * \return S_OK or the failure
 		 */
-		HRESULT InitializeComposition(HWND hwnd)
+		HRESULT initialize_composition(HWND hwnd)
 		{
+			m_compositionController->remove_CursorChanged(m_cursorChangedToken);
+			m_cursorChangedToken = nullptr;
 			RETURN_IF_FAILED(DCompositionCreateDevice2(nullptr, IID_PPV_ARGS(&m_dcompDevice)));
 			RETURN_IF_FAILED(m_dcompDevice->CreateTargetForHwnd(hwnd, TRUE, &m_dcompHwndTarget));
 			RETURN_IF_FAILED(m_dcompDevice->CreateVisual(&m_dcompRootVisual));
@@ -212,6 +215,28 @@ namespace WebView2
 			RETURN_IF_FAILED(m_compositionController->put_RootVisualTarget(m_dcompWebViewVisual.get()));
 			RETURN_IF_FAILED(m_dcompDevice->Commit());
 			return S_OK;
+		}
+		void delete_composition()
+		{
+			if (m_dcompWebViewVisual)
+			{
+				m_dcompWebViewVisual->RemoveAllVisuals();
+				m_dcompWebViewVisual.reset();
+			}
+			if (m_dcompRootVisual)
+			{
+				m_dcompRootVisual->RemoveAllVisuals();
+				m_dcompRootVisual.reset();
+			}
+			if (m_dcompHwndTarget)
+			{
+				m_dcompHwndTarget->SetRoot(nullptr);
+				m_dcompHwndTarget.reset();
+			}
+			if (m_dcompDevice)
+			{
+				m_dcompDevice = nullptr;
+			}
 		}
 		/**
 		 * \brief resize the WebView2 control
@@ -271,16 +296,15 @@ namespace WebView2
 			::TrackMouseEvent(&tme);
 		}
 	};
-
-
+	
 	template <class T>
-	class CWebView2Impl2 : public CompositionHost1<T>
+	class CWebView2Impl2 : public CompositionHost<T>
 	{
 	public:
 		std::wstring										m_url;
-		std::wstring										browserDirectory_;
-		std::wstring										userDataDirectory_;
-		bool												m_isModal = false;
+		std::wstring										m_browser_directory;
+		std::wstring										m_user_data_directory;
+		bool												m_is_modal = false;
 	private:
 		HWND												m_hwnd = nullptr;
 		wil::com_ptr<ICoreWebView2Environment>				m_webViewEnvironment = nullptr;
@@ -290,7 +314,7 @@ namespace WebView2
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CWebView2Impl2)
-			CHAIN_MSG_MAP(CompositionHost1<T>)
+			CHAIN_MSG_MAP(CompositionHost<T>)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		END_MSG_MAP()
@@ -301,9 +325,9 @@ namespace WebView2
 			if (!url.empty())
 				m_url = url;
 			if (!brower_directory.empty())
-				browserDirectory_ = brower_directory;
+				m_browser_directory = brower_directory;
 			if (!user_data_directory.empty())
-				userDataDirectory_ = user_data_directory;
+				m_user_data_directory = user_data_directory;
 		}
 		virtual ~CWebView2Impl2()
 		{
@@ -323,7 +347,7 @@ namespace WebView2
 				{
 					RETURN_IF_FAILED_MSG(hr, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(hr).data(), hr);
 				}
-				m_isModal = true;
+				m_is_modal = true;
 			}
 			return 0L;
 		}
@@ -363,8 +387,8 @@ namespace WebView2
 		{
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
-				 browserDirectory_.empty() ? nullptr : browserDirectory_.data(),
-									userDataDirectory_.data(),
+				 m_browser_directory.empty() ? nullptr : m_browser_directory.data(),
+									m_user_data_directory.data(),
 				    options.Get(),
 					Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
 						HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
