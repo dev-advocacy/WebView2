@@ -4,8 +4,8 @@
 
 #pragma once
 
-#include "WebBrowserDlg.h"
-//#include "WebView2Impl.h"
+#include "WebView2Impl2.h"
+
 
 class CWebView2 : public CWindowImpl<CWebView2>, public WebView2::CWebView2Impl2<CWebView2>
 {

@@ -9,7 +9,7 @@
 #include "WebViewProfile.h"
 #include "WebViewDlg.h"
 #include "WebViewModeless.h"
-#include "WebView2CompImpl.h"
+#include "WebView2Impl2.h"
 
 
 class CMainFrame : public CFrameWindowImpl<CMainFrame>, public CUpdateUI<CMainFrame>,public CMessageFilter, public CIdleHandler

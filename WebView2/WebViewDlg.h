@@ -1,8 +1,5 @@
 #pragma once
-
-
-//#include "WebView2Impl.h"
-#include "WebBrowserDlg.h"
+#include "WebView2Impl2.h"
 
 class CDlgWebView2 : public CDialogImpl<CDlgWebView2>, public WebView2::CWebView2Impl2<CDlgWebView2> 
 {

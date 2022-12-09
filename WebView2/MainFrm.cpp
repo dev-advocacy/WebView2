@@ -7,8 +7,7 @@
 #include "aboutdlg.h"
 #include "MainFrm.h"
 #include "ProgressDlg.h"	
-
-#include "WebBrowserDlg.h"
+#include "WebView2Impl2.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
