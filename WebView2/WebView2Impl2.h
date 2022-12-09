@@ -37,16 +37,7 @@ namespace WebView2
 		{
 			m_webview2_events = std::make_unique<webview2_events>();
 			m_webview2_authentication_events = std::make_unique<webview2_authentication_events>();
-		};
-		CWebView2Impl2(std::wstring brower_directory, std::wstring user_data_directory, std::wstring url)
-		{
-			if (!url.empty())
-				m_url = url;
-			if (!brower_directory.empty())
-				m_browser_directory = brower_directory;
-			if (!user_data_directory.empty())
-				m_user_data_directory = user_data_directory;
-		}
+		};		
 		virtual ~CWebView2Impl2()
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -73,14 +64,12 @@ namespace WebView2
 			if (::IsWindow(pT->m_hWnd))
 			{
 				m_hwnd = pT->m_hWnd;
-				InitializeWebView();
+				RETURN_IF_FAILED(InitializeWebView());
 			}
 			return 0L;
 		}
 		#pragma endregion windows_event
-
 		#pragma region WebView2_event
-
 		HRESULT navigate(std::wstring url)
 		{
 			if (m_webView)
@@ -92,9 +81,7 @@ namespace WebView2
 
 			return S_OK;
 		}
-
 		#pragma endregion WebView2_event
-
 	private:
 		HRESULT OnCreateCoreWebView2ControllerCompleted(HRESULT result, ICoreWebView2CompositionController* compositionController)
 		{
@@ -106,49 +93,42 @@ namespace WebView2
 			RETURN_IF_FAILED(m_controller->get_CoreWebView2(&m_webView));
 			RETURN_IF_FAILED(m_webview2_events->initialize(m_hwnd, m_webView, m_controller));
 			RETURN_IF_FAILED(m_webview2_authentication_events->initialize(m_hwnd, m_webView, m_controller));
-
 			RETURN_IF_FAILED((static_cast<T*>(this))->initialize(m_hwnd, m_controller, m_compositionController));
 			CRect bounds;
 			GetClientRect(m_hwnd , &bounds);
 
-			RETURN_IF_FAILED(m_controller->put_IsVisible(true));
-			
+			RETURN_IF_FAILED(m_controller->put_IsVisible(true));		
 			RETURN_IF_FAILED(m_webView->Navigate(m_url.c_str()));
 			(static_cast<T*>(this))->put_bounds(bounds);
 
 			return S_OK;
 		}
-
 		HRESULT InitializeWebView()
 		{
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
 			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
 				 m_browser_directory.empty() ? nullptr : m_browser_directory.data(),
-									m_user_data_directory.data(),
-				    options.Get(),
-					Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
-						HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
-						{
-							HRESULT hr = S_OK;
-							m_webViewEnvironment = environment;
-							wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
-							if (webViewEnvironment3)
-							{
-								auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(
-									m_hwnd,
-									Microsoft::WRL::Callback<
-									ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
-										[this](HRESULT hr, ICoreWebView2CompositionController* compositionController)
-										-> HRESULT
-										{
-											if (SUCCEEDED(hr)) {
+				 m_user_data_directory.data(),
+				 options.Get(),
+				 Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
+				 HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
+				 {
+					HRESULT hr = S_OK;
+					m_webViewEnvironment = environment;
+					wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
+					if (webViewEnvironment3)
+					{
+						auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(m_hwnd,
+												Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
+												[this](HRESULT hr, ICoreWebView2CompositionController* compositionController) -> HRESULT
+												{
+													if (SUCCEEDED(hr)) {
 
-												hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
-											}
-											else
-												RETURN_IF_FAILED(hr);
-
-								return hr;
+														hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
+													}
+													else
+														RETURN_IF_FAILED(hr);
+													return hr;
 										})
 									.Get());
 							}

@@ -58,7 +58,7 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 		}
 
-		HRESULT trace__authentication_event(wil::com_ptr <ICoreWebView2WebResourceResponseReceivedEventArgs> args)
+		HRESULT trace_authentication_event(wil::com_ptr <ICoreWebView2WebResourceResponseReceivedEventArgs> args)
 		{
 			wil::com_ptr<ICoreWebView2WebResourceRequest> request;
 			RETURN_IF_FAILED(args->get_Request(&request));
@@ -76,14 +76,13 @@ namespace WebView2
 			return S_OK;
 		}
 
-
 		HRESULT enable_authentication_event()
 		{
 			RETURN_IF_FAILED(m_webviewEventSource2->add_WebResourceResponseReceived(Microsoft::WRL::Callback<ICoreWebView2WebResourceResponseReceivedEventHandler>([this](
 				ICoreWebView2* core_web_view2,
 				ICoreWebView2WebResourceResponseReceivedEventArgs* args)	-> HRESULT
 				{
-					trace__authentication_event(args);
+					trace_authentication_event(args);
 					return S_OK;
 
 				}).Get(), &m_webResourceResponseReceivedToken));

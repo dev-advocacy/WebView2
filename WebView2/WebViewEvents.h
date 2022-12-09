@@ -168,23 +168,3 @@ namespace WebView2
 		}				
 	};
 }
-//void trace_webresource_basic_authentication_event()
-//{
-//	LOG_TRACE << __FUNCTION__;
-//}
-//void raise_webresource_basic_authentication_event()
-//{
-//	LOG_TRACE << __FUNCTION__;
-//}
-//HRESULT enable_basic_authentication()
-//{
-//	LOG_TRACE << __FUNCTION__;
-//	HRESULT hr = m_webviewEventSource3->add_BasicAuthenticationRequested(Microsoft::WRL::Callback<ICoreWebView2BasicAuthenticationRequestedEventHandler>([this](
-//		ICoreWebView2* sender,
-//		ICoreWebView2BasicAuthenticationRequestedEventArgs* args) 	-> HRESULT
-//		{
-
-//			return S_OK;
-
-//		}).Get(), &m_basicAuthenticationRequestedToken);
-//}
