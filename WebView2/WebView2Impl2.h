@@ -9,6 +9,13 @@
 
 namespace WebView2
 {
+	class ContextData
+	{
+	public:
+		std::wstring m_classname = L"Chrome_WidgetWin_0";
+		HWND					m_hwnd = nullptr;
+	};
+
 	template <class T>
 	class CWebView2Impl2 : public CCompositionHost<T>
 	{
@@ -81,8 +88,65 @@ namespace WebView2
 
 			return S_OK;
 		}
+
+		
+
+		HWND get_hwnd()
+		{
+			HWND parent = nullptr;
+			if (SUCCEEDED(m_controller->get_ParentWindow(&parent)))
+			{
+				ContextData context;
+
+				EnumChildWindows(parent, EnumChildProc, (LPARAM)&context);
+
+				return context.m_hwnd;
+			}
+			return nullptr;
+		}
+		void copy()
+		{
+			if (m_webView)
+			{
+				m_webView->ExecuteScript(L"document.execCommand(\"copy\")", nullptr);
+			}		
+		}
+
+		void paste(HWND hwnd)
+		{
+			if (m_webView)
+			{
+				m_webView->ExecuteScript(L"document.execCommand(\"paste\")", nullptr);
+			}
+		}
+		void cut()
+		{
+			if (m_webView)
+			{
+				m_webView->ExecuteScript(L"document.execCommand(\"cut\")", nullptr);
+			}
+		}
+
+
 		#pragma endregion WebView2_event
 	private:
+
+		static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
+		{
+			ContextData* pThis = (ContextData*)lParam;
+
+			std::array<wchar_t, 1024> dataclassName;
+
+			::GetClassName(hwnd, dataclassName.data(), (int)dataclassName.size());
+			std::wstring classname(dataclassName.data());
+			if (classname == pThis->m_classname)
+			{
+				pThis->m_hwnd = hwnd;
+			}
+
+			return TRUE;
+		}
+
 		HRESULT OnCreateCoreWebView2ControllerCompleted(HRESULT result, ICoreWebView2CompositionController* compositionController)
 		{
 			LOG_TRACE << __FUNCTION__;

@@ -241,6 +241,8 @@ namespace WebView2
 		 */
 		void resize_web_view() const
 		{
+			
+
 			//LOG_TRACE << __FUNCTION__;
 			if (m_controller)
 			{

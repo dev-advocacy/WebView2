@@ -175,3 +175,52 @@ LRESULT CMainFrame::OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	}
 	return 0;
 }
+
+
+LRESULT CMainFrame::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	HWND hwnd = GetFocus();
+	CEdit edit = m_wndCombo.GetEditCtrl();
+	auto webview_hwnd = m_webview2->get_hwnd();
+	if (hwnd == edit.m_hWnd)
+	{
+		m_wndCombo.Copy();
+	}
+	else if (webview_hwnd == hwnd)
+	{
+		m_webview2->copy();
+	}
+	return 0L;
+}
+LRESULT CMainFrame::OnEditPaste(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	HWND hwnd = GetFocus();
+	CEdit edit = m_wndCombo.GetEditCtrl();
+
+	auto webview_hwnd = m_webview2->get_hwnd();
+	if (hwnd == edit.m_hWnd)
+	{
+		m_wndCombo.Paste();
+	}
+	else if (webview_hwnd == hwnd)
+	{
+		m_webview2->paste(webview_hwnd);
+	}
+	return 0L;
+}
+LRESULT CMainFrame::OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	HWND hwnd = GetFocus();
+	CEdit edit = m_wndCombo.GetEditCtrl();
+
+	auto webview_hwnd = m_webview2->get_hwnd();
+	if (hwnd == edit.m_hWnd)
+	{
+		m_wndCombo.Cut();
+	}
+	else if (webview_hwnd == hwnd)
+	{
+		m_webview2->cut();
+	}
+	return 0L;
+}
