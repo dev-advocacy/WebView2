@@ -88,9 +88,6 @@ namespace WebView2
 
 			return S_OK;
 		}
-
-		
-
 		HWND get_hwnd()
 		{
 			HWND parent = nullptr;
@@ -111,7 +108,6 @@ namespace WebView2
 				m_webView->ExecuteScript(L"document.execCommand(\"copy\")", nullptr);
 			}		
 		}
-
 		void paste(HWND hwnd)
 		{
 			if (m_webView)
@@ -126,8 +122,6 @@ namespace WebView2
 				m_webView->ExecuteScript(L"document.execCommand(\"cut\")", nullptr);
 			}
 		}
-
-
 		#pragma endregion WebView2_event
 	private:
 
