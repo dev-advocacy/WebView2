@@ -6,6 +6,10 @@
 #include "WebViewEvents.h"
 #include "WebViewAuthentication.h"
 
+// Set to true to demonstrate the deadlock with LOG_TRACE in callbacks 
+// that run on the UI thread. 
+// To trigger the issue: navigate to http://msn.com
+constexpr bool LogTrace = false;
 
 namespace WebView2
 {
@@ -17,7 +21,7 @@ namespace WebView2
 	};
 
 	template <class T>
-	class CWebView2Impl2 : public CCompositionHost<T>
+	class CWebView2Impl2 : public CCompositionHost<T>, public IWebWiew2ImplEventCallback
 	{
 	public:
 		std::wstring										m_url;
@@ -32,12 +36,15 @@ namespace WebView2
 		wil::com_ptr<ICoreWebView2>							m_webView = nullptr;
 		std::unique_ptr<webview2_events>					m_webview2_events = nullptr;
 		std::unique_ptr<webview2_authentication_events>		m_webview2_authentication_events = nullptr;
+		std::list<std::future<void>>						m_asyncResults;
+		std::mutex											m_asyncResultsMutex;
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CWebView2Impl2)
 			CHAIN_MSG_MAP(CCompositionHost<T>)
 			MESSAGE_HANDLER(WM_CREATE, OnCreate)
 			MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+			MESSAGE_HANDLER(WM_RUN_FUNCTOR, OnRunFunctor)
 		END_MSG_MAP()
 
 		CWebView2Impl2()
@@ -75,7 +82,28 @@ namespace WebView2
 			}
 			return 0L;
 		}
+
+		LRESULT	OnRunFunctor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
+		{
+			auto* functor = reinterpret_cast<UIFunctorBase*>(wParam);
+
+			if (functor == nullptr)
+				return -1; // Error while posting the message. 
+
+			functor->Invoke();
+			functor->SignalComplete();
+
+			// Clean up future<void> instances for fire-and-forget operations that have completed.
+			std::lock_guard guard(m_asyncResultsMutex);
+			m_asyncResults.remove_if([](std::future<void>& value)
+				{
+					return value.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
+				});
+
+			return 0;
+		}
 		#pragma endregion windows_event
+
 		#pragma region WebView2_event
 		HRESULT navigate(std::wstring url)
 		{
@@ -123,6 +151,105 @@ namespace WebView2
 			}
 		}
 		#pragma endregion WebView2_event
+
+		// Implement IWebWiew2ImplEventCallback
+		virtual HWND GetHWnd() override
+		{
+			return m_hwnd;
+		}
+
+
+		virtual void KeepAliveAsyncResult(std::future<void>&& result) override
+		{
+			// Need to keep alive future<void> instance until fire-and-forget async operation completes.
+			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
+			std::lock_guard guard(m_asyncResultsMutex);
+			m_asyncResults.push_back(std::move(result));
+		}
+
+		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId, 
+			                                 bool isRedirected, bool isUserInitiated) override
+		{
+			if constexpr (LogTrace)
+			{
+				LOG_TRACE << __FUNCTION__;
+				LOG_TRACE << L"  uri=" << uri << L", ID=" << navigationId 
+					      << L", redirected=" << isRedirected 
+					      << L", user initiated=" << isUserInitiated;
+			}
+		
+			::OutputDebugStringA(__FUNCTION__);
+			::OutputDebugStringW(L" ==> uri=");
+			::OutputDebugStringW(std::wstring(uri).c_str());
+			::OutputDebugStringW(L", navigation ID=");
+			::OutputDebugStringW(std::to_wstring(navigationId).c_str());
+			::OutputDebugStringW(L", redirected=");
+			::OutputDebugStringW(isRedirected ? L"true" : L"false");
+			::OutputDebugStringW(L", user initiated=");
+			::OutputDebugStringW(isUserInitiated ? L"true" : L"false");
+			::OutputDebugStringW(L"\r\n");
+		}
+
+
+		virtual void NavigationCompleteEvent(bool isSuccess, unsigned long long navigationId,
+			                                 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) override
+		{
+			if constexpr (LogTrace)
+			{
+				LOG_TRACE << __FUNCTION__;
+				LOG_TRACE << L"  success=" << isSuccess << L", ID=" << navigationId
+					<< L", error status=" << errorStatus;
+			}
+
+			::OutputDebugStringA(__FUNCTION__);
+			::OutputDebugStringW(L" ==> success=");
+			::OutputDebugStringW(isSuccess ? L"true" : L"false");
+			::OutputDebugStringW(L", navigation ID=");
+			::OutputDebugStringW(std::to_wstring(navigationId).c_str());
+			::OutputDebugStringW(L", error status=");
+			::OutputDebugStringW(std::to_wstring(errorStatus).c_str());
+			::OutputDebugStringW(L"\r\n");
+		}
+
+
+		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) override
+		{
+			if constexpr (LogTrace)
+			{
+				LOG_TRACE << __FUNCTION__;
+				LOG_TRACE << L"  method=" << method << L", uri=" << uri;
+			}
+
+			::OutputDebugStringA(__FUNCTION__);
+			::OutputDebugStringW(L" ==> method=");
+			::OutputDebugStringW(std::wstring(method).c_str());
+			::OutputDebugStringW(L", uri=");
+			::OutputDebugStringW(std::wstring(uri).c_str());
+			::OutputDebugStringW(L"\r\n");
+		}
+
+
+		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
+			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) override
+		{
+			if constexpr (LogTrace)
+			{
+				LOG_TRACE << __FUNCTION__;
+				LOG_TRACE << L"  method=" << method << L", uri=" << uri
+					<< L", resource context=" << resourceContext;
+			}
+
+			::OutputDebugStringA(__FUNCTION__);
+			::OutputDebugStringW(L" ==> method=");
+			::OutputDebugStringW(std::wstring(method).c_str());
+			::OutputDebugStringW(L", uri=");
+			::OutputDebugStringW(std::wstring(uri).c_str());
+			::OutputDebugStringW(L", resource context=");
+			::OutputDebugStringW(std::to_wstring(resourceContext).c_str());
+			::OutputDebugStringW(L"\r\n");
+		}
+
+
 	private:
 
 		static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
@@ -149,7 +276,7 @@ namespace WebView2
 			m_compositionController = compositionController;
 			RETURN_IF_FAILED(m_compositionController->QueryInterface(IID_PPV_ARGS(&m_controller)));
 			RETURN_IF_FAILED(m_controller->get_CoreWebView2(&m_webView));
-			RETURN_IF_FAILED(m_webview2_events->initialize(m_hwnd, m_webView, m_controller));
+			RETURN_IF_FAILED(m_webview2_events->initialize(this, m_webView, m_controller));
 			RETURN_IF_FAILED(m_webview2_authentication_events->initialize(m_hwnd, m_webView, m_controller));
 			RETURN_IF_FAILED((static_cast<T*>(this))->initialize(m_hwnd, m_controller, m_compositionController));
 			CRect bounds;

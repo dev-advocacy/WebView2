@@ -12,14 +12,14 @@ constexpr UINT WM_RUN_FUNCTOR = WM_APP + 175;
 namespace WebView2
 {
 	// Base class of functors that must run on the UI thread.
-	class UIFunctorBase
+	class UIFunctorBase2
 	{
 	public:
-		UIFunctorBase()
+		UIFunctorBase2()
 			: _stopped(false)
 		{}
 
-		virtual ~UIFunctorBase() = default;
+		virtual ~UIFunctorBase2() = default;
 
 		// Called from a background thread thread. Blocks until the Windows message handler completes.
 		void PostToQueue(HWND wnd)
@@ -61,14 +61,14 @@ namespace WebView2
 	// Concrete class template for functors that must run ont he UI thread.
 	// The constructor supports lambda with capture clauses.
 	template <typename T>
-	class UIFunctor : public UIFunctorBase
+	class UIFunctor2 : public UIFunctorBase2
 	{
 	public:
-		UIFunctor<T>(T&& lambda)
+		UIFunctor2<T>(T&& lambda)
 			: _lambda(lambda)
 		{}
 
-		virtual ~UIFunctor() = default;
+		virtual ~UIFunctor2() = default;
 
 		virtual void Invoke() override
 		{
@@ -169,7 +169,7 @@ namespace WebView2
 
 		LRESULT	OnRunFunctor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
-			auto* functor = reinterpret_cast<UIFunctorBase*>(wParam);
+			auto* functor = reinterpret_cast<UIFunctorBase2*>(wParam);
 
 			if (functor == nullptr)
 				return -1; // Error while posting the message. 
@@ -612,7 +612,7 @@ namespace WebView2
 
 			auto asyncResult = std::async(std::launch::async, [this]()
 				{
-					UIFunctor functor([this]()
+					UIFunctor2 functor([this]()
 						{
 							if (_creationCompletedCallback)
 								_creationCompletedCallback(this);
@@ -659,7 +659,7 @@ namespace WebView2
 			std::wstring uriStr = uri.get();
 			auto asyncResult = std::async(std::launch::async, [this, uriStr]()
 				{
-					UIFunctor functor([this, uriStr]()
+					UIFunctor2 functor([this, uriStr]()
 						{
 							if (_navigationCompletedCallback)
 								_navigationCompletedCallback(this, uriStr);
@@ -690,7 +690,7 @@ namespace WebView2
 			std::wstring uriStr = uri.get();
 			auto asyncResult = std::async(std::launch::async, [this, uriStr]()
 				{
-					UIFunctor functor([this, uriStr]()
+					UIFunctor2 functor([this, uriStr]()
 						{
 							if (_navigationStartingCallback)
 								_navigationStartingCallback(this, uriStr);
