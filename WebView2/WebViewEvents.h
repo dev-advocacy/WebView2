@@ -4,8 +4,6 @@
 
 namespace WebView2
 {
-	constexpr UINT WM_RUN_FUNCTOR = WM_APP + 175;
-
 	// Base class of functors that must run on the UI thread.
 	class UIFunctorBase
 	{

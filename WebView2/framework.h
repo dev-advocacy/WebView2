@@ -108,6 +108,7 @@ static constexpr UINT MSG_RUN_ASYNC_CALLBACK = WM_APP + 124;
 static constexpr UINT MSG_NAVIGATE_CALLBACK = WM_APP + 125;
 static constexpr UINT MSG_GETCOOKIES_CALLBACK = WM_APP + 126;
 static constexpr UINT MSG_CALLBACK = WM_APP + 127;
+static constexpr UINT WM_RUN_FUNCTOR = WM_APP + 128;
 static constexpr int TEXT_SIZE = 1024;
 static constexpr int ERR_WEBVIEW_NOT_INSTALLED = -1024;
 static constexpr int ERR_RESOURCE_NOT_FOUND = -1025;

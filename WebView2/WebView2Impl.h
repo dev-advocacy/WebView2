@@ -6,8 +6,6 @@
 #include "Utility.h"
 #include "headersprop.h"
 
-constexpr UINT WM_RUN_FUNCTOR = WM_APP + 175;
-
 
 namespace WebView2
 {

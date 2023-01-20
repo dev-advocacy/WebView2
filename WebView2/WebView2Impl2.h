@@ -6,11 +6,6 @@
 #include "WebViewEvents.h"
 #include "WebViewAuthentication.h"
 
-// Set to true to demonstrate the deadlock with LOG_TRACE in callbacks 
-// that run on the UI thread. 
-// To trigger the issue: navigate to http://msn.com
-constexpr bool LogTrace = false;
-
 namespace WebView2
 {
 	class ContextData
@@ -170,83 +165,35 @@ namespace WebView2
 		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId, 
 			                                 bool isRedirected, bool isUserInitiated) override
 		{
-			if constexpr (LogTrace)
-			{
-				LOG_TRACE << __FUNCTION__;
-				LOG_TRACE << L"  uri=" << uri << L", ID=" << navigationId 
-					      << L", redirected=" << isRedirected 
-					      << L", user initiated=" << isUserInitiated;
-			}
-		
-			::OutputDebugStringA(__FUNCTION__);
-			::OutputDebugStringW(L" ==> uri=");
-			::OutputDebugStringW(std::wstring(uri).c_str());
-			::OutputDebugStringW(L", navigation ID=");
-			::OutputDebugStringW(std::to_wstring(navigationId).c_str());
-			::OutputDebugStringW(L", redirected=");
-			::OutputDebugStringW(isRedirected ? L"true" : L"false");
-			::OutputDebugStringW(L", user initiated=");
-			::OutputDebugStringW(isUserInitiated ? L"true" : L"false");
-			::OutputDebugStringW(L"\r\n");
+			LOG_TRACE << __FUNCTION__;
+			LOG_TRACE << L"  uri=" << uri << L", ID=" << navigationId 
+					  << L", redirected=" << isRedirected 
+					  << L", user initiated=" << isUserInitiated;
 		}
 
 
 		virtual void NavigationCompleteEvent(bool isSuccess, unsigned long long navigationId,
 			                                 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) override
 		{
-			if constexpr (LogTrace)
-			{
-				LOG_TRACE << __FUNCTION__;
-				LOG_TRACE << L"  success=" << isSuccess << L", ID=" << navigationId
-					<< L", error status=" << errorStatus;
-			}
-
-			::OutputDebugStringA(__FUNCTION__);
-			::OutputDebugStringW(L" ==> success=");
-			::OutputDebugStringW(isSuccess ? L"true" : L"false");
-			::OutputDebugStringW(L", navigation ID=");
-			::OutputDebugStringW(std::to_wstring(navigationId).c_str());
-			::OutputDebugStringW(L", error status=");
-			::OutputDebugStringW(std::to_wstring(errorStatus).c_str());
-			::OutputDebugStringW(L"\r\n");
+			LOG_TRACE << __FUNCTION__;
+			LOG_TRACE << L"  success=" << isSuccess << L", ID=" << navigationId
+				      << L", error status=" << errorStatus;
 		}
 
 
 		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) override
 		{
-			if constexpr (LogTrace)
-			{
-				LOG_TRACE << __FUNCTION__;
-				LOG_TRACE << L"  method=" << method << L", uri=" << uri;
-			}
-
-			::OutputDebugStringA(__FUNCTION__);
-			::OutputDebugStringW(L" ==> method=");
-			::OutputDebugStringW(std::wstring(method).c_str());
-			::OutputDebugStringW(L", uri=");
-			::OutputDebugStringW(std::wstring(uri).c_str());
-			::OutputDebugStringW(L"\r\n");
+			LOG_TRACE << __FUNCTION__;
+			LOG_TRACE << L"  method=" << method << L", uri=" << uri;
 		}
 
 
 		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
 			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) override
 		{
-			if constexpr (LogTrace)
-			{
-				LOG_TRACE << __FUNCTION__;
-				LOG_TRACE << L"  method=" << method << L", uri=" << uri
-					<< L", resource context=" << resourceContext;
-			}
-
-			::OutputDebugStringA(__FUNCTION__);
-			::OutputDebugStringW(L" ==> method=");
-			::OutputDebugStringW(std::wstring(method).c_str());
-			::OutputDebugStringW(L", uri=");
-			::OutputDebugStringW(std::wstring(uri).c_str());
-			::OutputDebugStringW(L", resource context=");
-			::OutputDebugStringW(std::to_wstring(resourceContext).c_str());
-			::OutputDebugStringW(L"\r\n");
+			LOG_TRACE << __FUNCTION__;
+			LOG_TRACE << L"  method=" << method << L", uri=" << uri
+				      << L", resource context=" << resourceContext;
 		}
 
 

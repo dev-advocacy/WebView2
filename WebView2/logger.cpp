@@ -142,7 +142,7 @@ BOOST_LOG_GLOBAL_LOGGER_INIT(logger, src::severity_logger_mt)
 				keywords::open_mode = logging::open_mode::open_or_create,
 				keywords::capacity = 256,
 				keywords::block_size = 1024,
-				keywords::overflow_policy = queue_t::block_on_overflow
+				keywords::overflow_policy = queue_t::fail_on_overflow
 		);
 
 		// Set the formatter
