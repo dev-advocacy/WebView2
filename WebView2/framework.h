@@ -103,15 +103,15 @@ namespace	keywords = boost::log::keywords;
 
 
 // custom messages
-static constexpr UINT MSG_NAVIGATE = WM_APP + 123;
-static constexpr UINT MSG_RUN_ASYNC_CALLBACK = WM_APP + 124;
-static constexpr UINT MSG_NAVIGATE_CALLBACK = WM_APP + 125;
-static constexpr UINT MSG_GETCOOKIES_CALLBACK = WM_APP + 126;
-static constexpr UINT MSG_CALLBACK = WM_APP + 127;
-static constexpr UINT WM_RUN_FUNCTOR = WM_APP + 128;
-static constexpr int TEXT_SIZE = 1024;
-static constexpr int ERR_WEBVIEW_NOT_INSTALLED = -1024;
-static constexpr int ERR_RESOURCE_NOT_FOUND = -1025;
+inline constexpr UINT MSG_NAVIGATE = WM_APP + 123;
+inline constexpr UINT MSG_RUN_ASYNC_CALLBACK = WM_APP + 124;
+inline constexpr UINT MSG_NAVIGATE_CALLBACK = WM_APP + 125;
+inline constexpr UINT MSG_GETCOOKIES_CALLBACK = WM_APP + 126;
+inline constexpr UINT MSG_CALLBACK = WM_APP + 127;
+inline constexpr UINT WM_RUN_FUNCTOR = WM_APP + 128;
+inline constexpr int TEXT_SIZE = 1024;
+inline constexpr int ERR_WEBVIEW_NOT_INSTALLED = -1024;
+inline constexpr int ERR_RESOURCE_NOT_FOUND = -1025;
 
 #if defined _M_IX86
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
