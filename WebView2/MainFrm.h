@@ -19,7 +19,9 @@ public:
 
 	CCommandBarCtrl						m_CmdBar;
 	std::unique_ptr <CWebView2>			m_webview2 = nullptr;
-	/*std::unique_ptr<CWebViewModeless>	m_dlgwebwiew2 = nullptr;*/
+	
+	std::unique_ptr<CDlgWebView2>		m_dlgWebWiew2Modeless = nullptr;
+	
 	ProfileInformation_t				m_webviewprofile;
 	CURLCombo							m_wndCombo;
 	
@@ -55,6 +57,9 @@ public:
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELESSDIALOGUSINGDIRECTCOMPOSITION, OnScenarioWebView2ModalDirectComp)
 
+
+		COMMAND_ID_HANDLER(ID_SCENARIO_INSTALLATION, OnScenarioInstallation)
+
 		MESSAGE_HANDLER(MSG_NAVIGATE_CALLBACK, OnNavigate)
 		
 
@@ -89,5 +94,8 @@ public:
 	LRESULT OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	
+
+	LRESULT OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 };

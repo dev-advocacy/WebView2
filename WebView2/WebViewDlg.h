@@ -7,6 +7,7 @@ public:
 	enum { IDD = IDD_DIALOG_WEB_VIEW };
 	CDlgWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url);
 	CDlgWebView2() {}
+	void put_modeless(bool modeless) { m_modeless = modeless; }
 
 	BEGIN_MSG_MAP(CDlgWebView2)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -17,4 +18,7 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+private:
+	bool m_modeless = false;
 };

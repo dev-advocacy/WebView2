@@ -19,7 +19,7 @@ LRESULT CDlgWebView2::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 LRESULT CDlgWebView2::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 
-	m_is_modal == true ? EndDialog(wID) : DestroyWindow();
+	m_modeless == true ? DestroyWindow() : EndDialog(wID);
 	return 0;
 }
 

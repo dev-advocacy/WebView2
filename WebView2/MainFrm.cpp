@@ -147,21 +147,32 @@ LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 LRESULT CMainFrame::OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	CProgressDlg dlg(L"https://go.microsoft.com/fwlink/p/?LinkId=2124703", L"D:\\DEV\\DEV.DS.2022\\WebView2\\x64\\Debug\\MicrosoftEdgeWebview2Setup.exe");
-	dlg.DoModal();
-
 	return 0;
 }
 
 LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	/*if (m_dlgwebwiew2 == nullptr)
-		m_dlgwebwiew2 = std::make_unique<CWebViewModeless>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
-	if (m_dlgwebwiew2 != nullptr && ::IsWindow(m_dlgwebwiew2->m_hWnd) == FALSE)
+
+	
+	
+
+	
+	if (m_dlgWebWiew2Modeless == nullptr)
+		m_dlgWebWiew2Modeless = std::make_unique<CDlgWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
+	if (m_dlgWebWiew2Modeless != nullptr && ::IsWindow(m_dlgWebWiew2Modeless->m_hWnd) == FALSE)
 	{
-		m_dlgwebwiew2->Create(this->m_hWnd);
-		m_dlgwebwiew2->ShowWindow(SW_SHOW);
-	}*/
+		m_dlgWebWiew2Modeless->put_modeless(true);
+		m_dlgWebWiew2Modeless->Create(this->m_hWnd);
+		m_dlgWebWiew2Modeless->ShowWindow(SW_SHOW);
+	}
+	return 0;
+}
+
+LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+
+	CProgressDlg dlg(L"https://go.microsoft.com/fwlink/p/?LinkId=2124703", L"D:\\DEV\\DEV.DS.2022\\WebView2\\x64\\Debug\\MicrosoftEdgeWebview2Setup.exe");
+	dlg.DoModal();
 	return 0;
 }
 

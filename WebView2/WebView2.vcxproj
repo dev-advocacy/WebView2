@@ -249,7 +249,6 @@
     <ClCompile Include="WebView2Impl.cpp" />
     <ClCompile Include="WebView2Main.cpp" />
     <ClCompile Include="WebViewDlg.cpp" />
-    <ClCompile Include="WebViewModeless.cpp" />
     <ClCompile Include="WebViewProfile.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -273,7 +272,6 @@
     <ClInclude Include="WebViewAuthentication.h" />
     <ClInclude Include="WebViewDlg.h" />
     <ClInclude Include="WebViewEvents.h" />
-    <ClInclude Include="WebViewModeless.h" />
     <ClInclude Include="WebViewProfile.h" />
   </ItemGroup>
   <ItemGroup>

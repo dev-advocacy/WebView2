@@ -112,6 +112,8 @@ BEGIN
         MENUITEM "Modal Dialog",                ID_SCENARIO_MODALDIALOG
         MENUITEM "Modeleless Dialog",           ID_SCENARIO_MODELELESSDIALOG
         MENUITEM "Modeless Dialog using direct composition", ID_SCENARIO_MODELESSDIALOGUSINGDIRECTCOMPOSITION
+        MENUITEM SEPARATOR
+        MENUITEM "Installation",                ID_SCENARIO_INSTALLATION
     END
     POPUP "WebView2 Scenario"
     BEGIN

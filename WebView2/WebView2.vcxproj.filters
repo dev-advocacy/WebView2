@@ -69,9 +69,6 @@
     <ClCompile Include="WebViewDlg.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="WebViewModeless.cpp">
-      <Filter>Source Files\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="ProgressDlg.cpp">
       <Filter>Source Files\Dialogs</Filter>
     </ClCompile>
@@ -127,9 +124,6 @@
     </ClInclude>
     <ClInclude Include="headersprop.h">
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
-    </ClInclude>
-    <ClInclude Include="WebViewModeless.h">
-      <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="ProgressDlg.h">
       <Filter>Header Files\Dialogs</Filter>

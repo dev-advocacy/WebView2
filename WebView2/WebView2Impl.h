@@ -207,16 +207,16 @@ namespace WebView2
 		}
 		HRESULT OnDlgInit(bool ismodeless=false)
 		{
-			T* pT = static_cast<T*>(this);
+			
 			LOG_TRACE << __FUNCTION__;
-			if (pT->InitWebView() == false)
+			if (InitWebView() == false)
 			{
 				RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
 			}
-			pT->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
-			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
-			pT->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
-			pT->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
+			this->RegisterCallback(CWebView2Impl::CallbackType::CreationCompleted, [this]() {CreationCompleted(); });
+			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationCompleted, [this]() {NavigationCompleted(this->url_); });
+			this->RegisterCallback(CWebView2Impl::CallbackType::AuthenticationCompleted, [this]() {AuthenticationCompleted(); });
+			this->RegisterCallback(CWebView2Impl::CallbackType::NavigationStarting, [this]() {NavigationStarting(); });
 			m_isModal = ismodeless;
 			return 0L;
 		}
