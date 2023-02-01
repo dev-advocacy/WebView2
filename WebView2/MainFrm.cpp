@@ -53,7 +53,11 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleStatusBar();
 
-	m_webviewprofile = CWebViewProfile::Profile();
+	HRESULT hr = CWebViewProfile::Profile(m_webviewprofile);
+	if (FAILED(hr))
+	{
+		return 0;
+	}
 	m_webview2 = std::make_unique<CWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	m_hWndClient = m_webview2->Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 

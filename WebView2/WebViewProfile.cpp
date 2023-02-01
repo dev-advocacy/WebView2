@@ -3,7 +3,7 @@
 #include "utility.h"
 #include "WebViewProfile.h"
 
-ProfileInformation_t CWebViewProfile::Profile()
+HRESULT CWebViewProfile::Profile(ProfileInformation_t& profile)
 {
 	LOG_TRACE << __FUNCTION__;
 
@@ -38,6 +38,7 @@ ProfileInformation_t CWebViewProfile::Profile()
 	{
 		LOG_TRACE << "The WebView2 runtime is not installed";
 		LOG_TRACE << "Please install the WebView2 runtime before running this application available on https://go.microsoft.com/fwlink/p/?LinkId=2124703";
+		return (hr);
 	}
 	LOG_TRACE << "Found installed WebView version=" << edgeVersionInfo;
 
@@ -62,9 +63,8 @@ ProfileInformation_t CWebViewProfile::Profile()
 		LOG_TRACE << "Using WebView2 channel=" << webView2Channel.data();
 	}
 
-	ProfileInformation_t profile;
-
 	profile.browserDirectory = WebView2::Utility::GetBrowserDirectory(webView2Version, webView2Channel, webViewFolder);
 	profile.userDataDirectory = WebView2::Utility::GetUserDataDirectory(webView2Channel);
-	return profile;
+
+	return (hr);
 }

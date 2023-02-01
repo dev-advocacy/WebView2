@@ -10,6 +10,6 @@ typedef struct ProfileInformation
 class CWebViewProfile
 {
 public:
-	static ProfileInformation_t Profile();
+	static HRESULT Profile(ProfileInformation_t& profile);
 };
 
