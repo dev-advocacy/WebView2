@@ -8,7 +8,6 @@
 #include "WebView2.h"
 #include "WebViewProfile.h"
 #include "WebViewDlg.h"
-#include "WebViewModeless.h"
 #include "WebView2Impl2.h"
 #include "UrlCombo.h"
 
@@ -55,7 +54,7 @@ public:
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
-		COMMAND_ID_HANDLER(ID_SCENARIO_MODELESSDIALOGUSINGDIRECTCOMPOSITION, OnScenarioWebView2ModalDirectComp)
+		
 
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_INSTALLATION, OnScenarioInstallation)
@@ -91,11 +90,7 @@ public:
 
 	LRESULT OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
 	LRESULT OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	
-
 	LRESULT OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 };

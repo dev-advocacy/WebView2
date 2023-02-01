@@ -6,7 +6,6 @@
 #include "resource.h"
 #include "aboutdlg.h"
 #include "MainFrm.h"
-#include "ProgressDlg.h"	
 #include "WebView2Impl2.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
@@ -145,18 +144,8 @@ LRESULT CMainFrame::OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, 
 //--system - level
 //setup.exe --uninstall --msedgewebview --system-level --verbose-logging --force-uninstall
 
-LRESULT CMainFrame::OnScenarioWebView2ModalDirectComp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	return 0;
-}
-
 LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-
-	
-	
-
-	
 	if (m_dlgWebWiew2Modeless == nullptr)
 		m_dlgWebWiew2Modeless = std::make_unique<CDlgWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	if (m_dlgWebWiew2Modeless != nullptr && ::IsWindow(m_dlgWebWiew2Modeless->m_hWnd) == FALSE)
@@ -171,8 +160,6 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 
-	CProgressDlg dlg(L"https://go.microsoft.com/fwlink/p/?LinkId=2124703", L"D:\\DEV\\DEV.DS.2022\\WebView2\\x64\\Debug\\MicrosoftEdgeWebview2Setup.exe");
-	dlg.DoModal();
 	return 0;
 }
 

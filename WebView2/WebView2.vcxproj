@@ -231,7 +231,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
-    <ClCompile Include="ProgressDlg.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="UrlCombo.cpp" />
     <ClCompile Include="Utility.cpp" />
@@ -255,7 +254,6 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="CompositionHost.h" />
     <ClInclude Include="headersprop.h" />
-    <ClInclude Include="ProgressDlg.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="UrlCombo.h" />
     <ClInclude Include="Utility.h" />
