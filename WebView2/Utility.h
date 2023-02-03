@@ -4,6 +4,8 @@ namespace WebView2
 	class Utility
 	{
 	public:
+		static std::wstring GetWebView2Version();
+		static HRESULT InstallWebView2FromWeb(bool installElevated);
 		static std::wstring GetBrowserDirectory(std::wstring_view webView2Version, std::wstring_view webView2Channel, std::wstring_view webViewFolder);
 		static std::wstring GetUserDataDirectory(std::wstring_view webView2Channel);
 		static std::wstring_view GetRootEdgeDirectory(std::wstring_view webView2Channel);

@@ -7,6 +7,7 @@
 #include "aboutdlg.h"
 #include "MainFrm.h"
 #include "WebView2Impl2.h"
+#include "Utility.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
 {
@@ -52,6 +53,11 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	AddSimpleReBarBand(hWndAddressBar, _T("Address"), TRUE);
 
 	CreateSimpleStatusBar();
+
+	std::wstring version = WebView2::Utility::GetWebView2Version();
+	if (version.empty())
+        this->MessageBoxW(L"Please install the WebView2 Runtime: menu Scenario/Installation", 
+			L"Warning", MB_OK | MB_ICONWARNING);
 
 	HRESULT hr = CWebViewProfile::Profile(m_webviewprofile);
 	if (FAILED(hr))
@@ -163,7 +169,35 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 
 LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-
+    constexpr size_t MaxMessageLength = 1024;
+    std::wstring message(MaxMessageLength, L'\0');
+	std::wstring version = WebView2::Utility::GetWebView2Version();
+	
+    if (version.empty())
+    {	// Install WebView2 in per-user mode.
+        HRESULT hr = WebView2::Utility::InstallWebView2FromWeb(false);
+		
+		if SUCCEEDED(hr)
+		{
+			this->MessageBoxW(L"Successfully installed the latest WebView2 version. "
+				L"Restart the application to refresh.",
+				L"Success", MB_OK | MB_ICONINFORMATION);
+		}
+		else
+		{
+            _snwprintf_s(message.data(), message.size(), _TRUNCATE,
+                L"Failed to install the latest WebView2 version. Error code: 0x%08X", hr);
+			this->MessageBoxW(L"Failed to install the latest WebView2 version.",
+				L"Error", MB_OK | MB_ICONERROR);
+		}
+    }
+    else
+    {
+		_snwprintf_s(message.data(), message.size(), _TRUNCATE, 
+			L"WebView2 version %s is already installed.", version.c_str());
+		this->MessageBoxW(message.c_str(), L"Information", MB_OK | MB_ICONINFORMATION);
+    }
+		
 	return 0;
 }
 
