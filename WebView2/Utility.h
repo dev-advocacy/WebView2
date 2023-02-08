@@ -5,7 +5,8 @@ namespace WebView2
 	{
 	public:
 		static std::wstring GetWebView2Version();
-		static HRESULT InstallWebView2FromWeb(bool installElevated);
+		static HRESULT DownloadWebView2Bootstrapper(std::wstring& bootstrapperPath);
+		static HRESULT InstallWebView2(const std::wstring& bootstrapperPath, bool elevated);
 		static std::wstring GetBrowserDirectory(std::wstring_view webView2Version, std::wstring_view webView2Channel, std::wstring_view webViewFolder);
 		static std::wstring GetUserDataDirectory(std::wstring_view webView2Channel);
 		static std::wstring_view GetRootEdgeDirectory(std::wstring_view webView2Channel);

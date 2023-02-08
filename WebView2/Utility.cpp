@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "Utility.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 namespace WebView2
 {
@@ -20,38 +23,48 @@ namespace WebView2
         // See https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#detect-if-a-suitable-webview2-runtime-is-already-installed
         // Returns the version string when the WebView2 is installed 
         // or empty string if WebView2 is not installed.
-        std::wstring version;
         wil::unique_cotaskmem_string wv2Version;
         HRESULT hr = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &wv2Version);
 
         if SUCCEEDED(hr)
-            version = wv2Version.get();
+            return wv2Version.get();
         
-        return version;
+        return {};
     }
 
     
     //static
-    HRESULT Utility::InstallWebView2FromWeb(bool installElevated)
+    HRESULT Utility::DownloadWebView2Bootstrapper(std::wstring& bootstrapperPath)
     {
         // See https://learn.microsoft.com/en-us/microsoft-edge/webview2/concepts/distribution#online-only-deployment
-        // Downloads the WebView2 Bootstrapper from the web and installs it.
+        // Downloads the WebView2 Bootstrapper from the web.
         // If the install is elevated, the WebView2 is installed system-wide.
         // Otherwise, it is installed per-user.
-        
+
         // Fwlink available on https://developer.microsoft.com/microsoft-edge/webview2/
-        HRESULT hr = URLDownloadToFileW(nullptr, L"https://go.microsoft.com/fwlink/p/?LinkId=2124703",
-                                        LR"(.\MicrosoftEdgeWebview2Setup.exe)", 0, 0);
+        std::wstring tempDirectory(MAX_PATH + 1, L'\0');
+        DWORD length = ::GetTempPathW(static_cast<DWORD>(tempDirectory.size()), tempDirectory.data());
+        if (length == 0)
+            return HRESULT_FROM_WIN32(::GetLastError());
         
-        if FAILED(hr)
-            return hr;
-            
-        // Either Package the WebView2 Bootstrapper with your app or download it using fwlink.
-        // Then invoke install at Runtime.
+        tempDirectory.resize(length);
+        bootstrapperPath = fs::path(tempDirectory) / L"MicrosoftEdgeWebview2Setup.exe";
+        
+        return URLDownloadToFileW(nullptr, L"https://go.microsoft.com/fwlink/p/?LinkId=2124703",
+            bootstrapperPath.c_str(), 0, 0);
+    }
+
+    
+    //static
+    HRESULT Utility::InstallWebView2(const std::wstring& bootstrapperPath, bool elevated)
+    {
+        // Installs the WebView2 Bootstrapper synchronously.
+        // If the install is elevated, the WebView2 is installed system-wide.
+        // Otherwise, it is installed per-user.
         SHELLEXECUTEINFOW shellInfo = { static_cast<DWORD>(sizeof(shellInfo)) };
         shellInfo.fMask = SEE_MASK_NOASYNC | SEE_MASK_NOCLOSEPROCESS;
-        shellInfo.lpVerb = installElevated ? L"runas" : nullptr; 
-        shellInfo.lpFile = L"MicrosoftEdgeWebview2Setup.exe";
+        shellInfo.lpVerb = elevated ? L"runas" : nullptr; 
+        shellInfo.lpFile = bootstrapperPath.c_str();
         shellInfo.lpParameters = L" /silent /install";
 
         if (!::ShellExecuteExW(&shellInfo))

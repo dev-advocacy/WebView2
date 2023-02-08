@@ -28,7 +28,7 @@ BOOL CMainFrame::OnIdle()
 HWND CMainFrame::CreateAddressBarCtrl(HWND hWndParent)
 {
 	RECT rc = { 50, 0, 300, 100 };
-	THROW_LAST_ERROR_IF_NULL(m_wndCombo.Create(hWndParent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT));
+	THROW_LAST_ERROR_IF_NULL(m_wndCombo.Create(hWndParent, rc, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CBS_DROPDOWN | CBS_AUTOHSCROLL | CBS_SORT));
 	m_wndCombo.SetFrame(this->m_hWnd);
 	return m_wndCombo;
 }
@@ -36,20 +36,20 @@ HWND CMainFrame::CreateAddressBarCtrl(HWND hWndParent)
 LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	// create command bar window
-	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
+	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, nullptr, ATL_SIMPLE_CMDBAR_PANE_STYLE);
 	HWND hWndAddressBar = CreateAddressBarCtrl(m_hWnd);
 	// attach menu
 	m_CmdBar.AttachMenu(GetMenu());
 	// load command bar images
 	m_CmdBar.LoadImages(IDR_MAINFRAME);
 	// remove old menu
-	SetMenu(NULL);
+	SetMenu(nullptr);
 
 	HWND hWndToolBar = CreateSimpleToolBarCtrl(m_hWnd, IDR_MAINFRAME, FALSE, ATL_SIMPLE_TOOLBAR_PANE_STYLE);
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
-	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
+	AddSimpleReBarBand(hWndToolBar, nullptr, TRUE);
 	AddSimpleReBarBand(hWndAddressBar, _T("Address"), TRUE);
 
 	CreateSimpleStatusBar();
@@ -65,7 +65,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		return 0;
 	}
 	m_webview2 = std::make_unique<CWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
-	m_hWndClient = m_webview2->Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
+	m_hWndClient = m_webview2->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 
 	UIAddToolBar(hWndToolBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
@@ -73,7 +73,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop != NULL);
+	ATLASSERT(pLoop != nullptr);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
@@ -84,7 +84,7 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 {
 	// unregister message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
-	ATLASSERT(pLoop != NULL);
+	ATLASSERT(pLoop != nullptr);
 	pLoop->RemoveMessageFilter(this);
 	pLoop->RemoveIdleHandler(this);
 
@@ -158,7 +158,7 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 {
 	if (m_dlgWebWiew2Modeless == nullptr)
 		m_dlgWebWiew2Modeless = std::make_unique<CDlgWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
-	if (m_dlgWebWiew2Modeless != nullptr && ::IsWindow(m_dlgWebWiew2Modeless->m_hWnd) == FALSE)
+	if ((m_dlgWebWiew2Modeless != nullptr) && !::IsWindow(m_dlgWebWiew2Modeless->m_hWnd))
 	{
 		m_dlgWebWiew2Modeless->put_modeless(true);
 		m_dlgWebWiew2Modeless->Create(this->m_hWnd);
@@ -173,31 +173,40 @@ LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, H
     std::wstring message(MaxMessageLength, L'\0');
 	std::wstring version = WebView2::Utility::GetWebView2Version();
 	
-    if (version.empty())
-    {	// Install WebView2 in per-user mode.
-        HRESULT hr = WebView2::Utility::InstallWebView2FromWeb(false);
-		
-		if SUCCEEDED(hr)
-		{
-			this->MessageBoxW(L"Successfully installed the latest WebView2 version. "
-				L"Restart the application to refresh.",
-				L"Success", MB_OK | MB_ICONINFORMATION);
-		}
-		else
-		{
-            _snwprintf_s(message.data(), message.size(), _TRUNCATE,
-                L"Failed to install the latest WebView2 version. Error code: 0x%08X", hr);
-			this->MessageBoxW(L"Failed to install the latest WebView2 version.",
-				L"Error", MB_OK | MB_ICONERROR);
-		}
-    }
-    else
-    {
-		_snwprintf_s(message.data(), message.size(), _TRUNCATE, 
+    if (!version.empty())
+    {	//TODO: Replace with std::format when C++20 is enabled.
+		_snwprintf_s(message.data(), message.size(), _TRUNCATE,
 			L"WebView2 version %s is already installed.", version.c_str());
 		this->MessageBoxW(message.c_str(), L"Information", MB_OK | MB_ICONINFORMATION);
-    }
+		return 0;
+	}
+	
+	// Download WebView2 boostrapper from the web.
+	std::wstring path;
+	HRESULT hr = WebView2::Utility::DownloadWebView2Bootstrapper(path);
+	
+	if FAILED(hr)
+	{   //TODO: Replace with std::format when C++20 is enabled.
+		_snwprintf_s(message.data(), message.size(), _TRUNCATE,
+			L"Failed to download the latest WebView2 version. Error code: 0x%08X", hr);
+		this->MessageBoxW(message.c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return 0;
+	}
 		
+	// Install WebView2 in per-user mode.
+    hr = WebView2::Utility::InstallWebView2(path, /*elevated*/ false);
+		
+	if FAILED(hr)
+	{	//TODO: Replace with std::format when C++20 is enabled.
+		_snwprintf_s(message.data(), message.size(), _TRUNCATE,
+			L"Failed to install the latest WebView2 version. Error code: 0x%08X", hr);
+		this->MessageBoxW(message.c_str(), L"Error", MB_OK | MB_ICONERROR);
+		return 0;
+	}
+		
+	this->MessageBoxW(L"Successfully installed the latest WebView2 version. "
+		L"Restart the application to refresh.",
+		L"Success", MB_OK | MB_ICONINFORMATION);
 	return 0;
 }
 
