@@ -96,9 +96,11 @@ namespace WebView2
 		wil::com_ptr<ICoreWebView2>				m_webviewEventSource = nullptr;
 		wil::com_ptr<ICoreWebView2_2>           m_webviewEventSource2 = nullptr;
 		wil::com_ptr<ICoreWebView2_10>          m_webviewEventSource3 = nullptr;
+		wil::com_ptr<ICoreWebView2_5>			m_webviewEventSource5 = nullptr;
 		wil::com_ptr<ICoreWebView2Controller>	m_controllerEventSource;
 		IWebWiew2ImplEventCallback*				m_callback = nullptr;
 		EventRegistrationToken                  m_webResourceResponseReceivedToken = {};
+		EventRegistrationToken                  m_clientCertificateRequestedToken = {};
 		EventRegistrationToken                  m_webResourceRequestedToken = {};	
 		EventRegistrationToken                  m_navigationStartingToken = {};
 		EventRegistrationToken                  m_navigationCompletedToken = {};
@@ -108,8 +110,12 @@ namespace WebView2
 		}
 		~webview2_events()
 		{
+
+
 			if (m_webResourceResponseReceivedToken.value != 0)
 				m_webviewEventSource2->remove_WebResourceResponseReceived(m_webResourceResponseReceivedToken);		
+			if (m_clientCertificateRequestedToken.value != 0)
+				m_webviewEventSource3->remove_ClientCertificateRequested(m_clientCertificateRequestedToken);
 			if (m_navigationCompletedToken.value != 0)
 				m_webviewEventSource->remove_NavigationCompleted(m_navigationCompletedToken);
 			if (m_navigationStartingToken.value != 0)
@@ -130,10 +136,18 @@ namespace WebView2
 				return ERROR_INVALID_DATA;
 			if (!m_webviewEventSource.try_query_to<ICoreWebView2_10>(&m_webviewEventSource3))
 				return ERROR_INVALID_DATA;
+
+			if (!m_webviewEventSource.try_query_to<ICoreWebView2_5>(&m_webviewEventSource5))
+				return ERROR_INVALID_DATA;
+
+
 			RETURN_IF_FAILED(enable_webresource_navigation_starting_event());
 			RETURN_IF_FAILED(enable_webresource_navigation_complete_event());
 			RETURN_IF_FAILED(enable_webresource_response_received_event());
 			RETURN_IF_FAILED(enable_webresource_request_event());
+
+			RETURN_IF_FAILED(enable_client_certificate_request_event());
+
 			return S_OK;
 		}
 	private:
@@ -297,6 +311,33 @@ namespace WebView2
 			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
 			m_callback->KeepAliveAsyncResult(std::move(asyncResult));
 		}
+
+		HRESULT enable_client_certificate_request_event()
+		{
+			LOG_TRACE << __FUNCTION__;
+
+			m_webviewEventSource5->add_ClientCertificateRequested(
+				Microsoft::WRL::Callback<ICoreWebView2ClientCertificateRequestedEventHandler>([this](ICoreWebView2* webview, ICoreWebView2ClientCertificateRequestedEventArgs* args)
+					-> HRESULT 
+					{
+
+						args->put_Handled(FALSE);
+						
+
+						
+
+					/*	wil::com_ptr<ICoreWebView2ClientCertificateCollection> certificateCollection;
+						RETURN_IF_FAILED(args->get_ClientCertificates(&certificateCollection));
+						wil::com_ptr<ICoreWebView2ClientCertificate> certificate;
+						RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(0, &certificate));
+						RETURN_IF_FAILED(args->put_SelectedCertificate(certificate.get()));*/
+						return S_OK;
+					}).Get(),
+					&m_clientCertificateRequestedToken);
+
+			return S_OK;
+		}
+
 		HRESULT enable_webresource_response_received_event()
 		{
 			LOG_TRACE << __FUNCTION__;

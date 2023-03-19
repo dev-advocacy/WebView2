@@ -7,6 +7,7 @@
 #include "aboutdlg.h"
 #include "MainFrm.h"
 #include "WebView2Impl2.h"
+#include "CertificateDlg.h"
 #include "Utility.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
@@ -268,4 +269,12 @@ LRESULT CMainFrame::OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		m_webview2->cut();
 	}
 	return 0L;
+}
+
+LRESULT CMainFrame::OnScenarioCertificateDialog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CCertificateDlg dlg;
+	dlg.DoModal();
+
+	return 0;
 }
