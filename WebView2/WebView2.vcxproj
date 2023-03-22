@@ -258,7 +258,7 @@
     <ClInclude Include="CertificateDlg.h" />
     <ClInclude Include="CompositionHost.h" />
     <ClInclude Include="headersprop.h" />
-    <ClInclude Include="ListViewCtrlMultiline.h" />
+    <ClInclude Include="ImageListBox.h" />
     <ClInclude Include="LogView.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="UrlCombo.h" />

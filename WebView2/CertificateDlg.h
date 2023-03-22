@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ListViewCtrlMultiline.h"
 #include "LogView.h"
+#include "ImageListBox.h"
+
 
 class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
 						public CWinDataExchange<CCertificateDlg>
@@ -9,9 +10,9 @@ class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
 public:
 	enum { IDD = IDD_DIALOG_CERTIFICATE };
 
-	BEGIN_DDX_MAP(CCertificateDlg)
-		//DDX_CONTROL_HANDLE(IDC_LIST_CERT, m_listCertificate)
-	END_DDX_MAP()
+	//BEGIN_DDX_MAP(CCertificateDlg)
+	//	DDX_CONTROL(IDC_LIST_CERTIFICATE, owner_draw_listbox1_)
+	//END_DDX_MAP()
 
 	BEGIN_MSG_MAP(CCertificateDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -30,8 +31,12 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
-	ListViewCtrlMultiline m_listCertificate;
-	CLogView m_logview;
+	/*ListViewCtrlMultiline m_listCertificate;
+	CLogView m_logview;*/
+	//CDevListBoxImpl owner_draw_listbox1_;
+
+	CImageListBoxCtrl m_courseList;
+	CImageList m_courseImageList;
 };
 
 

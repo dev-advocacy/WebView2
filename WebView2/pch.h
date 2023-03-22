@@ -7,6 +7,9 @@
 #ifndef PCH_H
 #define PCH_H
 
+#define _CRT_SECURE_NO_WARNINGS
+
+
 #define BOOST_USE_WINAPI_VERSION 0x0601
 
 #define _WIN32_WINNT	_WIN32_WINNT_WINBLUE

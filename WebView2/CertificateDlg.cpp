@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "resource.h"
-#include "ListViewCtrlMultiline.h"
 #include "CertificateDlg.h"
 
 
@@ -8,38 +7,32 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 {
 	CenterWindow(GetParent());
 
+	m_courseImageList.Create(80, 64, TRUE | ILC_COLOR32, 1, 1);
 
-	//auto rect = RECT();
-	//GetClientRect(&rect);
-	//rect.bottom = 540; // 40x 13 = 520, + 20 for column header
 
-	//m_logview.Create(*this, rect);
+	m_courseList.SubclassWindow(GetDlgItem(IDC_LIST_CERTIFICATE));
+	m_courseList.SetItemHeight(0, 70);
+	m_courseList.SetImageList(m_courseImageList.m_hImageList, ILSIL_NORMAL);
+	m_courseList.SetImageList(m_courseImageList.m_hImageList, ILSIL_SELECTED);
 
-	//m_logview.InsertColumn(0, _T("Scoobies2"), LVCFMT_LEFT, -1, -1);
-	//m_logview.InsertItem(0, _T("01 Willow is een test regel met een hoop tekens er achter"));
-	//m_logview.InsertItem(1, _T("02 Buffy is een test regel met een hoop tekens er achter"));
-	//m_logview.InsertItem(2, _T("03 Giles is een test regel met een hoop tekens er achter"));
-	//m_logview.InsertItem(3, _T("04 Willow is een test regel met een hoop tekens er achter"));
-	
+	CSize size(16,16);
 
-	//DoDataExchange();
+	m_courseImageList.SetIconSize(size);
 
-	auto rect = RECT();
-	GetClientRect(&rect);
-	rect.bottom = 540; // 40x 13 = 520, + 20 for column header
+	auto hIconUp = LoadIcon(_Module.GetResourceInstance(), MAKEINTRESOURCE(IDR_MAINFRAME));	
+	m_courseImageList.AddIcon(hIconUp);
 
-	m_listCertificate.Create(*this, rect);
 
-	m_listCertificate.InsertColumn(0, _T("Scoobies2"), LVCFMT_LEFT, 150, -1);
-	m_listCertificate.InsertItem(0, _T("01 Willow is een test regel met een hoop tekens er achter"));
-	m_listCertificate.InsertItem(1, _T("02 Buffy is een test regel met een hoop tekens er achter"));
-	m_listCertificate.InsertItem(2, _T("03 Giles is een test regel met een hoop tekens er achter"));
-	m_listCertificate.InsertItem(3, _T("04 Willow is een test regel met een hoop tekens er achter"));
+	ILBITEM item = { 0 };
+	item.mask = ILBIF_TEXT | ILBIF_IMAGE | ILBIF_SELIMAGE | ILBIF_STYLE | ILBIF_FORMAT;
+	item.iItem = 0;
+	item.iImage = 0;
+	item.iSelImage = 0;
+	item.pszText = const_cast<LPTSTR>(L"Gilles Guimard\nWindows Hello - MSIT2\n2/26/2023");
+	item.style = ILBS_IMGLEFT | ILBS_SELROUND;
+	item.format = DT_LEFT;
+	m_courseList.InsertItem(&item);
 
-	//m_listCertificate.AddItem(0, 0, L"Subject");
-
-	
-	//DoDataExchange(FALSE);
 
 
 

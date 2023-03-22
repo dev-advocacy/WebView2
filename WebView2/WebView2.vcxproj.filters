@@ -155,7 +155,7 @@
     <ClInclude Include="LogView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ListViewCtrlMultiline.h">
+    <ClInclude Include="ImageListBox.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>

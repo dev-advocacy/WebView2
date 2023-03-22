@@ -38,6 +38,7 @@
 #include <atlframe.h>
 #include <atlctrls.h>
 #include <atldlgs.h>
+#include <atlwin.h>
 
 extern CAppModule _Module;
 

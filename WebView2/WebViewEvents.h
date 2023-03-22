@@ -323,6 +323,8 @@ namespace WebView2
 
 						args->put_Handled(FALSE);
 						
+						wil::com_ptr<ICoreWebView2Deferral> deferral;
+						args->GetDeferral(&deferral);
 
 						
 

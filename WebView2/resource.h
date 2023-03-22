@@ -12,6 +12,7 @@
 #define IDC_BUTTON_CANCEL               1002
 #define IDC_LIST1                       1003
 #define IDC_LIST_CERT                   1003
+#define IDC_LIST_CERTIFICATE            1003
 #define ID_FILE_NEW_WINDOW              32771
 #define ID_SCENARIO_MODALDIALOG         32775
 #define ID_SCENARIO_MODELELESSDIALOG    32776
