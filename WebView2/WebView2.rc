@@ -135,6 +135,10 @@ END
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\WebView2.ico"
 
+IDI_ICON_CERTIFICATE    ICON                    "C:\\Users\\gillesg\\Desktop\\certificate.ico"
+
+IDI_ICON_PIN            ICON                    "C:\\Users\\gillesg\\Desktop\\pincode.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -256,6 +256,7 @@
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="CertificateDlg.h" />
+    <ClInclude Include="ClientCertificate.h" />
     <ClInclude Include="CompositionHost.h" />
     <ClInclude Include="headersprop.h" />
     <ClInclude Include="ImageListBox.h" />

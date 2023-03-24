@@ -7,6 +7,9 @@
 #define IDD_DIALOG1                     201
 #define IDD_DIALOG_WEB_VIEW             201
 #define IDD_DIALOG_CERTIFICATE          204
+#define IDI_ICON_CERTIFICATE            206
+#define IDI_ICON2                       207
+#define IDI_ICON_PIN                    207
 #define IDC_PROGRESS1                   1000
 #define IDC_BUTTON_OK                   1001
 #define IDC_BUTTON_CANCEL               1002
@@ -29,7 +32,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        206
+#define _APS_NEXT_RESOURCE_VALUE        208
 #define _APS_NEXT_COMMAND_VALUE         32781
 #define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           101

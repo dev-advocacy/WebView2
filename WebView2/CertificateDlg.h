@@ -10,10 +10,6 @@ class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
 public:
 	enum { IDD = IDD_DIALOG_CERTIFICATE };
 
-	//BEGIN_DDX_MAP(CCertificateDlg)
-	//	DDX_CONTROL(IDC_LIST_CERTIFICATE, owner_draw_listbox1_)
-	//END_DDX_MAP()
-
 	BEGIN_MSG_MAP(CCertificateDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
@@ -22,21 +18,18 @@ public:
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
-	// Handler prototypes (uncomment arguments if needed):
-	//	LRESULT MessageHandler(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
-	//	LRESULT CommandHandler(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-	//	LRESULT NotifyHandler(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
-
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+public:
+	CCertificateDlg() = delete;
+	CCertificateDlg(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral);
+	bool AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate);
 private:
-	/*ListViewCtrlMultiline m_listCertificate;
-	CLogView m_logview;*/
-	//CDevListBoxImpl owner_draw_listbox1_;
-
-	CImageListBoxCtrl m_courseList;
-	CImageList m_courseImageList;
+	CImageListBoxCtrl				m_courseList;
+	CImageList						m_courseImageList;
+	std::vector<ClientCertificate> 	m_client_certificates;
+	wil::com_ptr<ICoreWebView2Deferral> m_deferral;
 };
 
 

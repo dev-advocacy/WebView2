@@ -158,6 +158,9 @@
     <ClInclude Include="ImageListBox.h">
       <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="ClientCertificate.h">
+      <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="WebView2.rc">

@@ -196,6 +196,13 @@ namespace WebView2
 				      << L", resource context=" << resourceContext;
 		}
 
+		virtual void ClientCertificateRequestedEvent(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral) override
+		{
+			LOG_TRACE << __FUNCTION__;
+
+			CCertificateDlg dlg(client_certificates, deferral);
+			dlg.DoModal();
+		}
 
 	private:
 

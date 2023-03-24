@@ -1,41 +1,8 @@
-//#if !defined(AFX_IMAGELISTBOX_H__20011106_AF04_B15C_D1F1_0080AD509054__INCLUDED_)
-//#define AFX_IMAGELISTBOX_H__20011106_AF04_B15C_D1F1_0080AD509054__INCLUDED_
-
 #pragma once
 
-/////////////////////////////////////////////////////////////////////////////
-// CImageListBox - A ListBox control with that extra touch
-//
-// For this control to work, you must add the
-//   REFLECT_NOTIFICATIONS()
-// macro to the parent's message map.
-//
-// Written by Bjarke Viksoe (bjarke@viksoe.dk)
-// Copyright (c) 2001 Bjarke Viksoe.
-//
-// This code may be used in compiled form in any way you desire. This
-// source file may be redistributed by any means PROVIDING it is 
-// not sold for profit without the authors written consent, and 
-// providing that this notice and the authors name is included. 
-//
-// This file is provided "as is" with no expressed or implied warranty.
-// The author accepts no liability if it causes any damage to you or your
-// computer whatsoever. It's free, so don't hassle me about it.
-//
-// Beware of bugs.
-//
-//
-//#ifndef __cplusplus
-//  #error WTL requires C++ compilation (use a .cpp suffix)
-//#endif
-//
-//#ifndef __ATLAPP_H__
-//  #error ImageListBox.h requires atlapp.h to be included first
-//#endif
-//
-//#ifndef __ATLCTRLS_H__
-//  #error ImageListBox.h requires atlctrls.h to be included first
-//#endif
+
+constexpr int       FONT_SIZE = 9;
+constexpr wchar_t   FONT_NAME[] = TEXT("Segoe UI");
 
 
 // ImageListBox mask flags
@@ -89,12 +56,6 @@ typedef struct
    POINT ptArc;
 } ILBSETTINGS, *PILBSETTINGS;
 
-
-//template< class T, class TBase = CListBox, class TWinTraits = CControlWinTraits >
-//class ATL_NO_VTABLE CImageListBoxImpl : 
-//   public CWindowImpl< T, TBase, TWinTraits >,
-//   public COwnerDraw< T >
-
 class CImageListBoxCtrl : public CWindowImpl<CImageListBoxCtrl, CListBox>,
     public COwnerDraw<CImageListBoxCtrl>
 {
@@ -111,7 +72,7 @@ public:
    CImageList m_imgNormal;
    CImageList m_imgSelected;
    HFONT m_hSubFont;
-
+   CFont m_font_list = nullptr;
    // Message map
    
    BEGIN_MSG_MAP(CImageListBoxCtrl)
@@ -124,6 +85,21 @@ public:
    END_MSG_MAP()
 
    // Operations
+
+   
+
+   bool Add_Certificate(std::wstring certifcate_name)
+   {
+       ILBITEM item = { 0 };
+       item.mask = ILBIF_TEXT | ILBIF_IMAGE | ILBIF_SELIMAGE | ILBIF_STYLE | ILBIF_FORMAT;
+       item.iItem = 0;
+       item.iImage = 0;
+       item.iSelImage = 0;
+       item.pszText = const_cast<LPTSTR>(certifcate_name.c_str());
+       item.style = ILBS_IMGLEFT | ILBS_SELROUND;
+       item.format = DT_LEFT;
+       InsertItem(&item);
+   }
 
    BOOL SubclassWindow(HWND hWnd)
    {
@@ -144,14 +120,6 @@ public:
       return bRet;
    }
 
-   /*int AddString(LPCTSTR lpszItem)
-   {
-      ATLASSERT(false);
-   }
-   int InsertString(int nIndex, LPCTSTR lpszItem)
-   {
-      ATLASSERT(false);
-   }*/
    void SetItemData(int nIndex, LPARAM lParam)
    {
       ATLASSERT(false);
@@ -249,6 +217,25 @@ public:
       }    
       return hOldList;
    }
+
+   void SetListFont()
+   {
+       LOGFONT lf;
+       ::ZeroMemory(&lf, sizeof(LOGFONT));
+       if (this->GetDC() != nullptr)
+       {
+           int nHeight = -MulDiv(9, GetDeviceCaps(this->GetDC(), LOGPIXELSY), 72);
+           wcscpy_s(lf.lfFaceName, FONT_NAME);
+           lf.lfHeight = nHeight;
+           lf.lfWeight = FW_NORMAL;
+           lf.lfCharSet = ANSI_CHARSET;
+           lf.lfOutPrecision = OUT_DEFAULT_PRECIS;
+           lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+           lf.lfQuality = DEFAULT_QUALITY;
+           m_font_list.CreateFontIndirect(&lf);
+       }
+   }
+
    HFONT SetSmallFont(HFONT hFont)
    {
       ATLASSERT(::IsWindow(m_hWnd));
@@ -286,6 +273,8 @@ public:
       m_st.clrHighliteText = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
       m_st.clrHighlite = 
       m_st.clrHighliteBorder = ::GetSysColor(COLOR_HIGHLIGHT);
+
+      SetListFont();
    }
 
    // Message handlers
@@ -293,7 +282,7 @@ public:
    LRESULT OnCreate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
    {
       LRESULT lRes = DefWindowProc(uMsg, wParam, lParam);
-      _Init();
+      _Init();      
       return lRes;
    }
    LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -369,7 +358,12 @@ public:
       if( pItem->mask & ILBIF_IMAGE ) m_imgNormal.GetIconSize(iImageWidth, iImageHeight);
 
       // Prepare draw
-      HFONT hOldFont = dc.SelectFont(GetFont());
+      HFONT hOldFont = nullptr;
+      if (m_font_list == nullptr)
+          hOldFont = dc.SelectFont(GetFont());
+      else
+          hOldFont = dc.SelectFont(m_font_list.m_hFont);
+
       dc.SetBkMode(TRANSPARENT);
       dc.SetBkColor(clrBack);
       dc.SetTextColor(clrFront);
@@ -444,11 +438,3 @@ public:
       dc.SelectFont(hOldFont);
    }
 };
-
-//class CImageListBoxCtrl : public CImageListBoxImpl<CImageListBoxCtrl>
-//{
-//public:
-//   DECLARE_WND_SUPERCLASS(_T("WTL_ImageListBox"), GetWndClassName())  
-//};
-//
-//

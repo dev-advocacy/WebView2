@@ -1,5 +1,7 @@
 #pragma once
 #include "Utility.h"
+#include "ClientCertificate.h"
+#include "CertificateDlg.h"
 #include "logger.h"
 
 namespace WebView2
@@ -87,6 +89,8 @@ namespace WebView2
 		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) = 0;
 		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
 			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) = 0;
+
+		virtual void ClientCertificateRequestedEvent(std::vector<ClientCertificate> clientCertificates, wil::com_ptr<ICoreWebView2Deferral> deferral) = 0;
 	};
 	
 	
@@ -104,6 +108,8 @@ namespace WebView2
 		EventRegistrationToken                  m_webResourceRequestedToken = {};	
 		EventRegistrationToken                  m_navigationStartingToken = {};
 		EventRegistrationToken                  m_navigationCompletedToken = {};
+
+		std::vector<ClientCertificate>			m_clientCertificates;
 	public:
 		webview2_events()
 		{
@@ -312,27 +318,96 @@ namespace WebView2
 			m_callback->KeepAliveAsyncResult(std::move(asyncResult));
 		}
 
+		static PCWSTR NameOfCertificateKind(COREWEBVIEW2_CLIENT_CERTIFICATE_KIND kind)
+		{
+			switch (kind)
+			{
+			case COREWEBVIEW2_CLIENT_CERTIFICATE_KIND_SMART_CARD:
+				return L"Smart Card";
+			case COREWEBVIEW2_CLIENT_CERTIFICATE_KIND_PIN:
+				return L"PIN";
+			default:
+				return L"Other";
+			}
+		}
+
 		HRESULT enable_client_certificate_request_event()
 		{
 			LOG_TRACE << __FUNCTION__;
 
 			m_webviewEventSource5->add_ClientCertificateRequested(
 				Microsoft::WRL::Callback<ICoreWebView2ClientCertificateRequestedEventHandler>([this](ICoreWebView2* webview, ICoreWebView2ClientCertificateRequestedEventArgs* args)
-					-> HRESULT 
+					-> HRESULT
 					{
+						HRESULT hr = S_OK;
+						m_clientCertificates.clear();
 
-						args->put_Handled(FALSE);
-						
-						wil::com_ptr<ICoreWebView2Deferral> deferral;
-						args->GetDeferral(&deferral);
+						wil::com_ptr<ICoreWebView2ClientCertificateCollection> certificateCollection;
 
-						
+						hr = args->get_MutuallyTrustedCertificates(&certificateCollection);
 
-					/*	wil::com_ptr<ICoreWebView2ClientCertificateCollection> certificateCollection;
-						RETURN_IF_FAILED(args->get_ClientCertificates(&certificateCollection));
-						wil::com_ptr<ICoreWebView2ClientCertificate> certificate;
-						RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(0, &certificate));
-						RETURN_IF_FAILED(args->put_SelectedCertificate(certificate.get()));*/
+						wil::unique_cotaskmem_string host;
+						hr = args->get_Host(&host);
+
+						INT port = FALSE;
+						hr = args->get_Port(&port);
+
+						UINT certificateCollectionCount;
+						hr = certificateCollection->get_Count(&certificateCollectionCount);
+
+						wil::com_ptr<ICoreWebView2ClientCertificate> certificate = nullptr;
+
+						if (certificateCollectionCount > 0)
+						{
+							ClientCertificate clientCertificate;
+							for (UINT i = 0; i < certificateCollectionCount; i++)
+							{
+
+								hr = certificateCollection->GetValueAtIndex(i, &certificate);
+								hr = certificate->get_Subject(&clientCertificate.Subject);
+								hr = certificate->get_DisplayName(&clientCertificate.DisplayName);
+								hr = certificate->get_Issuer(&clientCertificate.Issuer);
+
+								COREWEBVIEW2_CLIENT_CERTIFICATE_KIND Kind;
+								hr = certificate->get_Kind(&Kind);
+								clientCertificate.CertificateKind = NameOfCertificateKind(Kind);
+
+								hr = certificate->get_ValidFrom(&clientCertificate.ValidFrom);
+
+								hr = certificate->get_ValidTo(&clientCertificate.ValidTo);
+
+								m_clientCertificates.push_back(clientCertificate);
+
+							}
+
+							wil::com_ptr<ICoreWebView2Deferral> deferral;
+							hr = args->GetDeferral(&deferral);
+
+							auto asyncResult = std::async(std::launch::async, [=, this]()
+								{
+									UIFunctor functor([&, this]()
+										{
+											m_callback->ClientCertificateRequestedEvent(this->m_clientCertificates, deferral);
+										});
+
+									functor.PostToQueue(m_callback->GetHWnd());
+								});
+
+							m_callback->KeepAliveAsyncResult(std::move(asyncResult));
+							
+							int x = 0;
+							if (x == 0)
+							{
+
+							}
+
+							hr = args->put_Handled(TRUE);
+						}
+						else
+						{
+							// Continue without a certificate to respond to the server if certificate collection is empty.
+							hr = args->put_Handled(TRUE);
+						}					
 						return S_OK;
 					}).Get(),
 					&m_clientCertificateRequestedToken);
