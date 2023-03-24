@@ -393,13 +393,7 @@ namespace WebView2
 									functor.PostToQueue(m_callback->GetHWnd());
 								});
 
-							m_callback->KeepAliveAsyncResult(std::move(asyncResult));
-							
-							int x = 0;
-							if (x == 0)
-							{
-
-							}
+							m_callback->KeepAliveAsyncResult(std::move(asyncResult));						
 
 							hr = args->put_Handled(TRUE);
 						}

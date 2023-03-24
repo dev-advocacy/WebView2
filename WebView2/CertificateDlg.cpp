@@ -3,11 +3,8 @@
 #include "ClientCertificate.h"
 #include "CertificateDlg.h"
 
-
-
 CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral) : m_client_certificates(client_certificates), m_deferral(deferral)
-{
-}
+{}
 
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -34,10 +31,7 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		auto ii = client_certificate.Issuer.get();
 		auto ee = client_certificate.CertificateKind;
 		auto ee1 = client_certificate.Subject.get();
-	}
-
-	m_deferral->Complete();
-
+	}	
 	//ILBITEM item = { 0 };
 	//item.mask = ILBIF_TEXT | ILBIF_IMAGE | ILBIF_SELIMAGE | ILBIF_STYLE | ILBIF_FORMAT;
 	//item.iItem = 0;
@@ -47,13 +41,11 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	//item.style = ILBS_IMGLEFT | ILBS_SELROUND;
 	//item.format = DT_LEFT;
 	//m_courseList.InsertItem(&item);
-
 	return TRUE;
 }
 
 bool CCertificateDlg::AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate)
 {
-	
 	return true;
 }
 
