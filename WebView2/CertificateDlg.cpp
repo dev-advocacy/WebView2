@@ -3,13 +3,11 @@
 #include "ClientCertificate.h"
 #include "CertificateDlg.h"
 
-
 // https://certtestdemo.azurewebsites.net/
 
 CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent)
 {
 }
-
 
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -65,7 +63,6 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	return TRUE;
 }
 
-
 std::wstring CCertificateDlg::UnixEpochToDateTime(double value) 
 {
 	WCHAR rawResult[32] = {};
@@ -88,7 +85,6 @@ LRESULT CCertificateDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 	EndDialog(wID);
 	return wID;
 }
-
 
 void CCertificateDlg::set_selectedItem()
 {
