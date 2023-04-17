@@ -37,12 +37,11 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		item.iSelImage = 0;
 		item.iSelImage = 0;
 
-		auto dd = client_certificate.DisplayName.get();
-		auto ii = client_certificate.Issuer.get();
-		auto ee = client_certificate.CertificateKind;
-		auto ee1 = client_certificate.Subject.get();
-
-		auto ee3 = client_certificate.ValidTo;
+		//auto dd = client_certificate.DisplayName.get();
+		//auto ii = client_certificate.Issuer.get();
+		//auto ee = client_certificate.CertificateKind;
+		//auto ee1 = client_certificate.Subject.get();
+		//auto ee3 = client_certificate.ValidTo;
 
 		std::wstring wstr = client_certificate.DisplayName.get();
 		wstr += L"\n";
