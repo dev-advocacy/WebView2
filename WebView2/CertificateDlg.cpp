@@ -6,8 +6,10 @@
 
 // https://certtestdemo.azurewebsites.net/
 
-CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates) : m_client_certificates(client_certificates)
-{}
+CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent)
+{
+}
+
 
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -56,8 +58,10 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 		item.style = ILBS_IMGLEFT | ILBS_SELROUND;
 		m_List_certificate.InsertItem(&item);
-
+	
+		
 	}	
+	SetWindowPos(this->m_hwnd_parent, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	return TRUE;
 }
 

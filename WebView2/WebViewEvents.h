@@ -110,6 +110,7 @@ namespace WebView2
 		EventRegistrationToken                  m_navigationCompletedToken = {};
 
 		std::vector<ClientCertificate>			m_clientCertificates;
+		HWND									m_hwnd_parent = nullptr;	
 	public:
 		webview2_events()
 		{
@@ -129,8 +130,13 @@ namespace WebView2
 			if (m_webResourceRequestedToken.value != 0)
 				m_webviewEventSource->remove_WebResourceRequested(m_webResourceRequestedToken);			
 		}
-		HRESULT initialize(IWebWiew2ImplEventCallback* callback, wil::com_ptr<ICoreWebView2> webviewEventSource, wil::com_ptr<ICoreWebView2Controller> controllerEventSource)
+		HRESULT initialize(IWebWiew2ImplEventCallback* callback, wil::com_ptr<ICoreWebView2> webviewEventSource, wil::com_ptr<ICoreWebView2Controller> controllerEventSource, HWND hwnd_parent)
 		{
+			if (::IsWindow(hwnd_parent))
+			{
+				m_hwnd_parent = hwnd_parent;
+			}
+
 			if ((callback == nullptr) || (webviewEventSource == nullptr) || (controllerEventSource == nullptr))
 			{
 				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(ERROR_INVALID_PARAMETER).c_str(), ERROR_INVALID_PARAMETER);
@@ -379,7 +385,7 @@ namespace WebView2
 									m_clientCertificates.push_back(clientCertificate);
 								}
 							}
-							CCertificateDlg dlg(m_clientCertificates);
+							CCertificateDlg dlg(m_clientCertificates, m_hwnd_parent);
 							if (dlg.DoModal() == IDOK)
 							{
 								if (dlg.get_selectedItem() >= 0)

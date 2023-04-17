@@ -23,7 +23,7 @@ public:
 
 public:
 	CCertificateDlg() = delete;
-	CCertificateDlg(std::vector<ClientCertificate> client_certificates);
+	CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent);
 	bool AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate);
 	int get_selectedItem();
 
@@ -35,7 +35,7 @@ private:
 	CImageList						m_ImageList_certificate;
 	std::vector<ClientCertificate> 	m_client_certificates;
 	int								m_selectedItem = -1;								
-	
+	HWND							m_hwnd_parent = nullptr;
 };
 
 

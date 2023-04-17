@@ -33,6 +33,7 @@ namespace WebView2
 		std::unique_ptr<webview2_authentication_events>		m_webview2_authentication_events = nullptr;
 		std::list<std::future<void>>						m_asyncResults;
 		std::mutex											m_asyncResultsMutex;
+		HWND												m_hwnd_parent = nullptr;
 	public:
 		// Message map and handlers
 		BEGIN_MSG_MAP(CWebView2Impl2)
@@ -46,7 +47,14 @@ namespace WebView2
 		{
 			m_webview2_events = std::make_unique<webview2_events>();
 			m_webview2_authentication_events = std::make_unique<webview2_authentication_events>();
-		};		
+		};
+
+		void set_parent(HWND hwnd)
+		{
+			m_hwnd_parent = hwnd;
+		}
+
+
 		virtual ~CWebView2Impl2()
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -227,7 +235,9 @@ namespace WebView2
 			m_compositionController = compositionController;
 			RETURN_IF_FAILED(m_compositionController->QueryInterface(IID_PPV_ARGS(&m_controller)));
 			RETURN_IF_FAILED(m_controller->get_CoreWebView2(&m_webView));
-			RETURN_IF_FAILED(m_webview2_events->initialize(this, m_webView, m_controller));
+
+
+			RETURN_IF_FAILED(m_webview2_events->initialize(this, m_webView, m_controller, m_hwnd_parent));
 			RETURN_IF_FAILED(m_webview2_authentication_events->initialize(m_hwnd, m_webView, m_controller));
 			RETURN_IF_FAILED((static_cast<T*>(this))->initialize(m_hwnd, m_controller, m_compositionController));
 			CRect bounds;
