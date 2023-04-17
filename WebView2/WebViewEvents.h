@@ -331,82 +331,87 @@ namespace WebView2
 			}
 		}
 
-		HRESULT enable_client_certificate_request_event()
+		void HandleCertificate()
+		{
+
+		}
+
+
+		HRESULT enable_client_certificate_request_event() noexcept
 		{
 			LOG_TRACE << __FUNCTION__;
+			HRESULT hr = S_OK;
 
 			m_webviewEventSource5->add_ClientCertificateRequested(
 				Microsoft::WRL::Callback<ICoreWebView2ClientCertificateRequestedEventHandler>([this](ICoreWebView2* webview, ICoreWebView2ClientCertificateRequestedEventArgs* args)
 					-> HRESULT
 					{
-						HRESULT hr = S_OK;
-						m_clientCertificates.clear();
-
-						wil::com_ptr<ICoreWebView2ClientCertificateCollection> certificateCollection;
-
-						hr = args->get_MutuallyTrustedCertificates(&certificateCollection);
-
-						wil::unique_cotaskmem_string host;
-						hr = args->get_Host(&host);
-
-						INT port = FALSE;
-						hr = args->get_Port(&port);
-
-						UINT certificateCollectionCount;
-						hr = certificateCollection->get_Count(&certificateCollectionCount);
-
-						wil::com_ptr<ICoreWebView2ClientCertificate> certificate = nullptr;
-
-						if (certificateCollectionCount > 0)
+						
+						auto showDialog = [this, args]
 						{
-							ClientCertificate clientCertificate;
-							for (UINT i = 0; i < certificateCollectionCount; i++)
+							wil::com_ptr<ICoreWebView2ClientCertificateCollection> certificateCollection;
+							args->get_MutuallyTrustedCertificates(&certificateCollection);
+
+							m_clientCertificates.clear();
+
+							RETURN_IF_FAILED(args->get_MutuallyTrustedCertificates(&certificateCollection));
+							wil::unique_cotaskmem_string host;
+							RETURN_IF_FAILED(args->get_Host(&host));
+							INT port = FALSE;
+							RETURN_IF_FAILED(args->get_Port(&port));
+							UINT certificateCollectionCount;
+							RETURN_IF_FAILED(certificateCollection->get_Count(&certificateCollectionCount));
+							wil::com_ptr<ICoreWebView2ClientCertificate> certificate = nullptr;
+							if (certificateCollectionCount > 0)
 							{
-
-								hr = certificateCollection->GetValueAtIndex(i, &certificate);
-								hr = certificate->get_Subject(&clientCertificate.Subject);
-								hr = certificate->get_DisplayName(&clientCertificate.DisplayName);
-								hr = certificate->get_Issuer(&clientCertificate.Issuer);
-
-								COREWEBVIEW2_CLIENT_CERTIFICATE_KIND Kind;
-								hr = certificate->get_Kind(&Kind);
-								clientCertificate.CertificateKind = NameOfCertificateKind(Kind);
-
-								hr = certificate->get_ValidFrom(&clientCertificate.ValidFrom);
-
-								hr = certificate->get_ValidTo(&clientCertificate.ValidTo);
-
-								m_clientCertificates.push_back(clientCertificate);
-
-							}
-
-							wil::com_ptr<ICoreWebView2Deferral> deferral;
-							hr = args->GetDeferral(&deferral);
-
-							auto asyncResult = std::async(std::launch::async, [=, this]()
+								ClientCertificate clientCertificate;
+								for (UINT i = 0; i < certificateCollectionCount; i++)
 								{
-									UIFunctor functor([&, this]()
-										{
-											m_callback->ClientCertificateRequestedEvent(this->m_clientCertificates, deferral);
-										});
+									RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(i, &certificate));
+									RETURN_IF_FAILED(certificate->get_Subject(&clientCertificate.Subject));
+									RETURN_IF_FAILED(certificate->get_DisplayName(&clientCertificate.DisplayName));
+									RETURN_IF_FAILED(certificate->get_Issuer(&clientCertificate.Issuer));
+									COREWEBVIEW2_CLIENT_CERTIFICATE_KIND Kind;
+									RETURN_IF_FAILED(certificate->get_Kind(&Kind));
+									clientCertificate.CertificateKind = NameOfCertificateKind(Kind);
+									RETURN_IF_FAILED(certificate->get_ValidFrom(&clientCertificate.ValidFrom));
+									RETURN_IF_FAILED(certificate->get_ValidTo(&clientCertificate.ValidTo));
+									m_clientCertificates.push_back(clientCertificate);
+								}
+							}
+							CCertificateDlg dlg(m_clientCertificates);
+							if (dlg.DoModal() == IDOK)
+							{
+								if (dlg.get_selectedItem() >= 0)
+								{
+									RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(dlg.get_selectedItem(), &certificate));
+									RETURN_IF_FAILED(args->put_SelectedCertificate(certificate.get()));
+									args->put_Handled(TRUE);
+								}
+								else
+								{
+									args->put_Handled(TRUE);
+								}	
+							}
+						};
 
-									functor.PostToQueue(m_callback->GetHWnd());
-								});
+						wil::com_ptr<ICoreWebView2Deferral> deferral;
+						args->GetDeferral(&deferral);
 
-							m_callback->KeepAliveAsyncResult(std::move(asyncResult));						
-
-							hr = args->put_Handled(TRUE);
-						}
-						else
+						auto asyncResult = std::async(std::launch::async, [deferral, showDialog]()
 						{
-							// Continue without a certificate to respond to the server if certificate collection is empty.
-							hr = args->put_Handled(TRUE);
-						}					
+							showDialog();
+							deferral->Complete();
+
+						});										
+
+
+						m_callback->ClientCertificateRequestedEvent(this->m_clientCertificates, deferral);
 						return S_OK;
 					}).Get(),
 					&m_clientCertificateRequestedToken);
 
-			return S_OK;
+			return (hr);
 		}
 
 		HRESULT enable_webresource_response_received_event()

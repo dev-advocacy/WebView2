@@ -283,6 +283,8 @@
     <ResourceCompile Include="WebView2.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\certificate.ico" />
+    <Image Include="res\pincode.ico" />
     <Image Include="res\toolbar.bmp" />
     <Image Include="res\WebView2.ico" />
   </ItemGroup>

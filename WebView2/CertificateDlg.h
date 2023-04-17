@@ -23,13 +23,19 @@ public:
 
 public:
 	CCertificateDlg() = delete;
-	CCertificateDlg(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral);
+	CCertificateDlg(std::vector<ClientCertificate> client_certificates);
 	bool AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate);
+	int get_selectedItem();
+
 private:
-	CImageListBoxCtrl				m_courseList;
-	CImageList						m_courseImageList;
+		std::wstring	UnixEpochToDateTime(double value);
+		void			set_selectedItem();
+private:
+	CImageListBoxCtrl				m_List_certificate;
+	CImageList						m_ImageList_certificate;
 	std::vector<ClientCertificate> 	m_client_certificates;
-	wil::com_ptr<ICoreWebView2Deferral> m_deferral;
+	int								m_selectedItem = -1;								
+	
 };
 
 
