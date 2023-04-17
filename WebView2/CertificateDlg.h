@@ -37,5 +37,3 @@ private:
 	int								m_selectedItem = -1;								
 	HWND							m_hwnd_parent = nullptr;
 };
-
-
