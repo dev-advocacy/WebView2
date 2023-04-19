@@ -2,16 +2,53 @@
 #include "resource.h"
 #include "ClientCertificate.h"
 #include "CertificateDlg.h"
+#include "osutility.h"
 
 // https://certtestdemo.azurewebsites.net/
 
-CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent)
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+
+
+// Set dialog text and background color //
+LRESULT CCertificateDlg::OnCtrlColor(UINT, WPARAM wParam, LPARAM, BOOL& handled)
 {
+	return (m_theme_color.SetWindowBackgroudColor(wParam));
 }
+
+LRESULT CCertificateDlg::OnSettingChange(UINT, WPARAM wParam, LPARAM lParam, BOOL&)
+{
+	if (wParam == 0 && lParam != 0)
+	{
+		const std::wstring param{ (wchar_t*)lParam };
+		if (param == L"ImmersiveColorSet")
+		{
+			os::utility::SetWindowBackgroud(this->m_hWnd);
+		}
+	}
+	return 0;
+}
+
+CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent)
+{}
 
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	CenterWindow(GetParent());
+
+	m_OK.SubclassWindow(GetDlgItem(IDOK));
+	m_OK.SetBkColor(RGB(0, 108, 190));
+	m_OK.SetTextColor(RGB(255, 255, 255));
+	
+	
+	m_Cancel.SubclassWindow(GetDlgItem(IDCANCEL));
+	m_Cancel.SetBkColor(RGB(0, 108, 190));
+	m_Cancel.SetTextColor(RGB(255, 255, 255));
+
+	BOOL value = TRUE;
+
+	os::utility::SetWindowBackgroud(this->m_hWnd);
 
 	m_ImageList_certificate.Create(80, 64, TRUE | ILC_COLOR32, 1, 1);
 	m_List_certificate.SubclassWindow(GetDlgItem(IDC_LIST_CERTIFICATE));
@@ -56,6 +93,7 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		item.style = ILBS_IMGLEFT | ILBS_SELROUND;
 		m_List_certificate.InsertItem(&item);
 	
+		
 		
 	}	
 	SetWindowPos(this->m_hwnd_parent, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);

@@ -3,6 +3,8 @@
 #include "targetver.h"
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 
+#include <dwmapi.h>
+
 #include <cstdlib>
 #include <cstdio>
 #include <malloc.h>
@@ -113,6 +115,14 @@ inline constexpr UINT WM_RUN_FUNCTOR = WM_APP + 128;
 inline constexpr int TEXT_SIZE = 1024;
 inline constexpr int ERR_WEBVIEW_NOT_INSTALLED = -1024;
 inline constexpr int ERR_RESOURCE_NOT_FOUND = -1025;
+
+
+enum ColorMode
+{
+	Dark,
+	Light,
+	none
+};
 
 #if defined _M_IX86
 #pragma comment(linker, "/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

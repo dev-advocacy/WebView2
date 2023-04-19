@@ -1,5 +1,6 @@
 #pragma once
 
+#include "osutility.h"
 
 constexpr int       FONT_SIZE = 9;
 constexpr wchar_t   FONT_NAME[] = TEXT("Segoe UI");
@@ -268,12 +269,24 @@ public:
    }
    void _InitSettings()
    {
-      m_st.clrText = ::GetSysColor(COLOR_WINDOWTEXT);
-      m_st.clrBackground = ::GetSysColor(COLOR_WINDOW);
-      m_st.clrHighliteText = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
-      m_st.clrHighlite = 
-      m_st.clrHighliteBorder = ::GetSysColor(COLOR_HIGHLIGHT);
+      ColorMode mode = os::theme::get_instance()->get_color_mode();
 
+      if (mode == ColorMode::Dark)
+      {
+          m_st.clrText = RGB(255, 255, 255);
+          m_st.clrBackground = RGB(74, 74, 74);
+          m_st.clrHighliteText = RGB(255, 255, 255);
+          m_st.clrHighlite = RGB(74, 74, 74);
+          m_st.clrHighliteBorder = RGB(255, 255, 255);
+      }
+      else
+      {
+              m_st.clrText = ::GetSysColor(COLOR_WINDOWTEXT);
+              m_st.clrBackground = ::GetSysColor(COLOR_WINDOW);
+              m_st.clrHighliteText = ::GetSysColor(COLOR_HIGHLIGHTTEXT);
+              m_st.clrHighlite =
+              m_st.clrHighliteBorder = ::GetSysColor(COLOR_HIGHLIGHT);
+      }
       SetListFont();
    }
 

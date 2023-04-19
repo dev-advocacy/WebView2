@@ -6,6 +6,9 @@
 namespace os
 {
 
+
+   
+
     HRESULT svg::Init2D2()
     {
         HRESULT hr = S_OK;
@@ -310,6 +313,44 @@ namespace os
                
        }
 
+    }
+
+
+    colortheme::colortheme()
+    {
+        m_brush_dark.CreateSolidBrush(RGB(74, 74, 74));
+        m_brush_light.CreateSolidBrush(RGB(255, 255, 255));
+    }
+
+    void utility::SetWindowBackgroud(HWND hwnd)
+    {
+        ColorMode mode = os::theme::get_instance()->get_color_mode();
+
+        BOOL btrue = TRUE;
+        BOOL bfalse = FALSE;
+        if (::IsWindow(hwnd))
+        {
+            mode == ColorMode::Dark ? ::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &btrue, sizeof(btrue)) :
+                                      ::DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &bfalse, sizeof(bfalse));
+        }
+    }
+
+    LRESULT colortheme::SetWindowBackgroudColor(WPARAM wParam)
+    {
+        ColorMode mode = os::theme::get_instance()->get_color_mode();
+
+        SetBkMode((HDC)wParam, TRANSPARENT);
+
+        if (mode == ColorMode::Dark)
+        {
+            SetTextColor((HDC)wParam, RGB(255, 255, 255));
+            return (LRESULT)(m_brush_dark.m_hBrush);
+        }
+        else
+        {
+            SetTextColor((HDC)wParam, RGB(0, 0, 0));
+            return (LRESULT)(m_brush_light.m_hBrush);
+        }
     }
 
     

@@ -2,7 +2,13 @@
 
 #include "LogView.h"
 #include "ImageListBox.h"
+#include "osutility.h"
 
+
+
+#include "resource.h"
+
+#include "ColoredControls.h"
 
 class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
 						public CWinDataExchange<CCertificateDlg>
@@ -10,8 +16,15 @@ class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
 public:
 	enum { IDD = IDD_DIALOG_CERTIFICATE };
 
+	CColoredButtonCtrl m_OK;
+	CColoredButtonCtrl m_Cancel;
+
 	BEGIN_MSG_MAP(CCertificateDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_SETTINGCHANGE, OnSettingChange)
+
+		MESSAGE_HANDLER(WM_CTLCOLORDLG, OnCtrlColor)
+		//MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		DEFAULT_REFLECTION_HANDLER()
@@ -20,6 +33,9 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnCtrlColor(UINT, WPARAM wParam, LPARAM, BOOL&);
+	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
+	//LRESULT OnEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 public:
 	CCertificateDlg() = delete;
@@ -36,4 +52,5 @@ private:
 	std::vector<ClientCertificate> 	m_client_certificates;
 	int								m_selectedItem = -1;								
 	HWND							m_hwnd_parent = nullptr;
+	os::colortheme					m_theme_color;
 };

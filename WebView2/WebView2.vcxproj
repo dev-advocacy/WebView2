@@ -137,7 +137,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>windowsapp.lib;D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>windowsapp.lib;D2d1.lib;Windowscodecs.lib;wininet.lib;Dcomp.lib;Urlmon.lib;Dwmapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -232,7 +232,6 @@
   <ItemGroup>
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="CertificateDlg.cpp" />
-    <ClCompile Include="ListViewCtrlMultiline.cpp" />
     <ClCompile Include="LogView.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="UrlCombo.cpp" />
@@ -257,6 +256,7 @@
     <ClInclude Include="AboutDlg.h" />
     <ClInclude Include="CertificateDlg.h" />
     <ClInclude Include="ClientCertificate.h" />
+    <ClInclude Include="ColoredControls.h" />
     <ClInclude Include="CompositionHost.h" />
     <ClInclude Include="headersprop.h" />
     <ClInclude Include="ImageListBox.h" />
