@@ -271,11 +271,11 @@ public:
 
       if (mode == ColorMode::Dark)
       {
-          m_st.clrText = RGB(255, 255, 255);
-          m_st.clrBackground = RGB(74, 74, 74);
-          m_st.clrHighliteText = RGB(255, 255, 255);
-          m_st.clrHighlite = RGB(74, 74, 74);
-          m_st.clrHighliteBorder = RGB(0, 108, 190); //Blue
+          m_st.clrText = WHITE_COLOR;
+          m_st.clrBackground = DIALOG_BACKGROUD_DARK_COLOR;
+          m_st.clrHighliteText = WHITE_COLOR;
+          m_st.clrHighlite = DIALOG_BACKGROUD_DARK_COLOR;
+          m_st.clrHighliteBorder = BLUE_COLOR;
       }
       else
       {

@@ -18,6 +18,9 @@
 
 #define IDM_CREATION_MODE_TARGET_DCOMP  195
 
+#define BLUE_COLOR RGB(0, 108, 190)
+#define DIALOG_BACKGROUD_DARK_COLOR  RGB(74, 74, 74);
+#define WHITE_COLOR RGB(255, 255, 255);
 // add headers that you want to pre-compile here
 #include "framework.h"
 

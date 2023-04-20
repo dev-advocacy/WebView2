@@ -384,29 +384,28 @@ namespace WebView2
 									RETURN_IF_FAILED(certificate->get_ValidTo(&clientCertificate.ValidTo));
 									m_clientCertificates.push_back(clientCertificate);
 								}
-							}
+								std::wstring host_name = host.get();
+								host_name += L":";
+								host_name += std::to_wstring(port);
 
-							std::wstring host_name = host.get();
-							host_name += L":";
-							host_name  += std::to_wstring(port);
-
-							CCertificateDlg dlg(m_clientCertificates, host_name, m_hwnd_parent);
-							if (dlg.DoModal() == IDOK)
-							{
-								if (dlg.get_selectedItem() >= 0)
+								CCertificateDlg dlg(m_clientCertificates, host_name, m_hwnd_parent);
+								if (dlg.DoModal() == IDOK)
 								{
-									RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(dlg.get_selectedItem(), &certificate));
-									RETURN_IF_FAILED(args->put_SelectedCertificate(certificate.get()));
-									args->put_Handled(TRUE);
+									if (dlg.get_selectedItem() >= 0)
+									{
+										RETURN_IF_FAILED(certificateCollection->GetValueAtIndex(dlg.get_selectedItem(), &certificate));
+										RETURN_IF_FAILED(args->put_SelectedCertificate(certificate.get()));
+										args->put_Handled(TRUE);
+									}
+									else
+									{
+										args->put_Handled(TRUE);
+									}
 								}
 								else
 								{
 									args->put_Handled(TRUE);
-								}	
-							}
-							else
-							{
-								//args->put_Handled(TRUE);
+								}
 							}
 						};
 
@@ -418,8 +417,6 @@ namespace WebView2
 							showDialog();
 							deferral->Complete();
 						});										
-
-
 						m_callback->ClientCertificateRequestedEvent(this->m_clientCertificates, deferral);
 						return S_OK;
 					}).Get(),

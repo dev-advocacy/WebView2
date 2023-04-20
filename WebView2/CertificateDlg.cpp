@@ -36,11 +36,11 @@ CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certifica
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	m_OK.SubclassWindow(GetDlgItem(IDOK));
-	m_OK.SetBkColor(RGB(0, 108, 190));
+	m_OK.SetBkColor(BLUE_COLOR);
 	m_OK.SetTextColor(RGB(255, 255, 255));
 	
 	m_Cancel.SubclassWindow(GetDlgItem(IDCANCEL));
-	m_Cancel.SetBkColor(RGB(0, 108, 190));
+	m_Cancel.SetBkColor(BLUE_COLOR);
 	m_Cancel.SetTextColor(RGB(255, 255, 255));
 
 	BOOL value = TRUE;
