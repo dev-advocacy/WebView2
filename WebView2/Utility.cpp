@@ -53,7 +53,6 @@ namespace WebView2
         return URLDownloadToFileW(nullptr, L"https://go.microsoft.com/fwlink/p/?LinkId=2124703",
             bootstrapperPath.c_str(), 0, 0);
     }
-
     
     //static
     HRESULT Utility::InstallWebView2(const std::wstring& bootstrapperPath, bool elevated)

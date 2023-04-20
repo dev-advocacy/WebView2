@@ -273,7 +273,6 @@ LRESULT CMainFrame::OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	}
 	return 0L;
 }
-
 LRESULT CMainFrame::OnScenarioCertificateDialog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	std::vector<ClientCertificate> clientCertificates;

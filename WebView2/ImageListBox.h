@@ -104,8 +104,6 @@ public:
 
    BOOL SubclassWindow(HWND hWnd)
    {
-       
-
       ATLASSERT(m_hWnd == NULL);
       ATLASSERT(::IsWindow(hWnd));
 #ifdef _DEBUG
@@ -203,7 +201,7 @@ public:
    }
    CImageList SetImageList(HIMAGELIST hImageList, int nImageList)
    {
-      HIMAGELIST hOldList = NULL;
+      HIMAGELIST hOldList = nullptr;
       switch( nImageList ) {
       case ILSIL_NORMAL:
          hOldList = m_imgNormal;
@@ -277,7 +275,7 @@ public:
           m_st.clrBackground = RGB(74, 74, 74);
           m_st.clrHighliteText = RGB(255, 255, 255);
           m_st.clrHighlite = RGB(74, 74, 74);
-          m_st.clrHighliteBorder = RGB(255, 255, 255);
+          m_st.clrHighliteBorder = RGB(0, 108, 190); //Blue
       }
       else
       {

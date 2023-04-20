@@ -30,17 +30,14 @@ LRESULT CCertificateDlg::OnSettingChange(UINT, WPARAM wParam, LPARAM lParam, BOO
 	return 0;
 }
 
-CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent)
+CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates,std::wstring host_name, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent), m_host_name(host_name)
 {}
 
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	CenterWindow(GetParent());
-
 	m_OK.SubclassWindow(GetDlgItem(IDOK));
 	m_OK.SetBkColor(RGB(0, 108, 190));
 	m_OK.SetTextColor(RGB(255, 255, 255));
-	
 	
 	m_Cancel.SubclassWindow(GetDlgItem(IDCANCEL));
 	m_Cancel.SetBkColor(RGB(0, 108, 190));
@@ -86,19 +83,32 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		wstr += L"\n";
 		wstr += UnixEpochToDateTime(client_certificate.ValidTo);
 
-		
-
 		item.pszText = const_cast<LPTSTR>(wstr.c_str());
 
 		item.style = ILBS_IMGLEFT | ILBS_SELROUND;
 		m_List_certificate.InsertItem(&item);
-	
-		
-		
 	}	
-	SetWindowPos(this->m_hwnd_parent, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	if (m_client_certificates.size() > 0)
+		m_List_certificate.SelectString(0, m_client_certificates[0].DisplayName.get());
+
+	SetWindowPos(this->m_hwnd_parent, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);	
+
+	CenterWindow(GetParent());
+	
+	// load ddx values
+	DoDataExchange(TRUE);
+
+	std::wstring site = L"Site ";
+	site += m_host_name;
+	site += L" needs your credentials : ";
+
+	m_site_information = site.c_str();
+	DoDataExchange(FALSE);
+
 	return TRUE;
 }
+
+
 
 std::wstring CCertificateDlg::UnixEpochToDateTime(double value) 
 {

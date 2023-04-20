@@ -385,7 +385,12 @@ namespace WebView2
 									m_clientCertificates.push_back(clientCertificate);
 								}
 							}
-							CCertificateDlg dlg(m_clientCertificates, m_hwnd_parent);
+
+							std::wstring host_name = host.get();
+							host_name += L":";
+							host_name  += std::to_wstring(port);
+
+							CCertificateDlg dlg(m_clientCertificates, host_name, m_hwnd_parent);
 							if (dlg.DoModal() == IDOK)
 							{
 								if (dlg.get_selectedItem() >= 0)
@@ -399,6 +404,10 @@ namespace WebView2
 									args->put_Handled(TRUE);
 								}	
 							}
+							else
+							{
+								//args->put_Handled(TRUE);
+							}
 						};
 
 						wil::com_ptr<ICoreWebView2Deferral> deferral;
@@ -408,7 +417,6 @@ namespace WebView2
 						{
 							showDialog();
 							deferral->Complete();
-
 						});										
 
 
@@ -416,7 +424,6 @@ namespace WebView2
 						return S_OK;
 					}).Get(),
 					&m_clientCertificateRequestedToken);
-
 			return (hr);
 		}
 
