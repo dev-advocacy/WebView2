@@ -26,9 +26,6 @@ IAsyncOperation<InMemoryRandomAccessStream> GetDataAsync()
 		HttpCookieManager cookieManager(filter.CookieManager());
 		HttpClient httpClient(filter);
 
-		
-		
-
 		Uri uri{ L"https://github.com" };
 		auto httpMethod{ HttpMethod::Get() };
 
