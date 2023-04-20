@@ -3,11 +3,7 @@
 #include "LogView.h"
 #include "ImageListBox.h"
 #include "osutility.h"
-
-
-
 #include "resource.h"
-
 #include "ColoredControls.h"
 
 class CCertificateDlg : public CDialogImpl<CCertificateDlg>,
@@ -22,7 +18,6 @@ public:
 	BEGIN_DDX_MAP(CCertificateDlg)
 		DDX_TEXT(IDC_STATIC_SITE_INFORMATION, m_site_information)
 	END_DDX_MAP()
-
 
 	BEGIN_MSG_MAP(CCertificateDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -39,17 +34,17 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCtrlColor(UINT, WPARAM wParam, LPARAM, BOOL&);
 	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
-	
 
 public:
 	CCertificateDlg() = delete;
 	CCertificateDlg(std::vector<ClientCertificate> client_certificates,std::wstring host_name, HWND hwnd_parent);
 	bool AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate);
-	int get_selectedItem();
+	int  get_selectedItem();
 
 private:
-		std::wstring	UnixEpochToDateTime(double value);
-		void			set_selectedItem();
+	std::wstring	UnixEpochToDateTime(double value);
+	void			set_selectedItem();
+
 private:
 	CImageListBoxCtrl				m_List_certificate;
 	CImageList						m_ImageList_certificate;

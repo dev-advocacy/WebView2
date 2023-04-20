@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "WebViewDlg.h"
 
-
 CDlgWebView2::CDlgWebView2(std::wstring browerdirectory, std::wstring userdatedirectory, std::wstring url)
 {
 	m_user_data_directory = userdatedirectory;
@@ -18,8 +17,6 @@ LRESULT CDlgWebView2::OnInitDialog(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL
 }
 LRESULT CDlgWebView2::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-
 	m_modeless == true ? DestroyWindow() : EndDialog(wID);
 	return 0;
 }
-

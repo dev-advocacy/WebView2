@@ -100,8 +100,7 @@ namespace WebView2
 					return S_OK;
 
 				}).Get(), &m_basicAuthenticationRequestedToken));
-			return S_OK;
-			
+			return S_OK;			
 		}		
 	};
 }

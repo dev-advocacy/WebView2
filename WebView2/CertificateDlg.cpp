@@ -10,8 +10,6 @@
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 
-
-// Set dialog text and background color //
 LRESULT CCertificateDlg::OnCtrlColor(UINT, WPARAM wParam, LPARAM, BOOL& handled)
 {
 	return (m_theme_color.SetWindowBackgroudColor(wParam));
@@ -29,19 +27,17 @@ LRESULT CCertificateDlg::OnSettingChange(UINT, WPARAM wParam, LPARAM lParam, BOO
 	}
 	return 0;
 }
-
 CCertificateDlg::CCertificateDlg(std::vector<ClientCertificate> client_certificates,std::wstring host_name, HWND hwnd_parent) : m_client_certificates(client_certificates), m_hwnd_parent(hwnd_parent), m_host_name(host_name)
 {}
-
 LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	m_OK.SubclassWindow(GetDlgItem(IDOK));
 	m_OK.SetBkColor(BLUE_COLOR);
-	m_OK.SetTextColor(RGB(255, 255, 255));
+	m_OK.SetTextColor(WHITE_COLOR);
 	
 	m_Cancel.SubclassWindow(GetDlgItem(IDCANCEL));
 	m_Cancel.SetBkColor(BLUE_COLOR);
-	m_Cancel.SetTextColor(RGB(255, 255, 255));
+	m_Cancel.SetTextColor(WHITE_COLOR);
 
 	BOOL value = TRUE;
 
@@ -71,12 +67,6 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 		item.iSelImage = 0;
 		item.iSelImage = 0;
 
-		//auto dd = client_certificate.DisplayName.get();
-		//auto ii = client_certificate.Issuer.get();
-		//auto ee = client_certificate.CertificateKind;
-		//auto ee1 = client_certificate.Subject.get();
-		//auto ee3 = client_certificate.ValidTo;
-
 		std::wstring wstr = client_certificate.DisplayName.get();
 		wstr += L"\n";
 		wstr += client_certificate.Issuer.get();
@@ -104,11 +94,8 @@ LRESULT CCertificateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	m_site_information = site.c_str();
 	DoDataExchange(FALSE);
-
 	return TRUE;
 }
-
-
 
 std::wstring CCertificateDlg::UnixEpochToDateTime(double value) 
 {
@@ -120,24 +107,20 @@ std::wstring CCertificateDlg::UnixEpochToDateTime(double value)
 	std::wstring result(rawResult);
 	return result;
 }
-
 bool CCertificateDlg::AddCertificate(const std::wstring& name, const std::wstring& issuer, const std::wstring& expirationDate)
 {
 	return true;
 }
-
 LRESULT CCertificateDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	set_selectedItem();
 	EndDialog(wID);
 	return wID;
 }
-
 void CCertificateDlg::set_selectedItem()
 {
 	m_selectedItem = m_List_certificate.GetCurSel();
 }
-
 int CCertificateDlg::get_selectedItem()
 {
 	return m_selectedItem;
