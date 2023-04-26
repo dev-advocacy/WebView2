@@ -16,6 +16,7 @@ namespace WebView2
 		static std::wstring EncodeQuote(std::wstring raw);
 		static std::wstring SecondsToString(UINT32 time);
 		static std::wstring CookieToString(ICoreWebView2Cookie* cookie);
+		static std::error_code GetUniqueLogFileName(fs::path& pFileName);
 	private:
 		static std::wstring GetProgramFilesx86Directory();
 		static std::wstring GetLangStringFromLangId(DWORD dwLangID_i, bool returnShortCode);

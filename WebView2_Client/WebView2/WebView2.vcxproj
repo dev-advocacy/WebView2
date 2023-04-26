@@ -273,7 +273,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="WebView2Impl2.h" />
     <ClInclude Include="WebView2.h" />
-    <ClInclude Include="WebView2Impl.h" />
     <ClInclude Include="WebViewAuthentication.h" />
     <ClInclude Include="WebViewDlg.h" />
     <ClInclude Include="WebViewEvents.h" />

@@ -34,15 +34,18 @@
     <Filter Include="Header Files\WebView2\WebView2Impl">
       <UniqueIdentifier>{c1dd53d6-3e88-4572-b02b-076c5bb7500b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Logger">
+      <UniqueIdentifier>{ee49f65e-82a0-47e8-a77f-037c0e4dec62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Logger">
+      <UniqueIdentifier>{aa4d82c8-25a5-4100-b12d-a54a1defd97e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WebView2Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MainFrm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
@@ -84,15 +87,15 @@
     <ClCompile Include="LogView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="logger.cpp">
+      <Filter>Source Files\Logger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -118,9 +121,6 @@
     </ClInclude>
     <ClInclude Include="WebViewDlg.h">
       <Filter>Header Files\Dialogs</Filter>
-    </ClInclude>
-    <ClInclude Include="WebView2Impl.h">
-      <Filter>Header Files\WebView2\WebView2Impl</Filter>
     </ClInclude>
     <ClInclude Include="WebViewProfile.h">
       <Filter>Header Files\WebView2\WebView2Impl</Filter>
@@ -160,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="ColoredControls.h">
       <Filter>Header Files\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="logger.h">
+      <Filter>Header Files\Logger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

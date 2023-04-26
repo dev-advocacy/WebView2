@@ -44,8 +44,8 @@ BOOST_LOG_ATTRIBUTE_KEYWORD(thread_id, "ThreadID", attrs::current_thread_id::val
 
 /// <summary>
 /// Set the logging framework
-///          debug mode   : output to the console application, Visual Studio OutputWindow, Text file, path = %temp%\DassaultSystemes.SCCMScanDisk
-/// 		 release mode :	output to the console application, output to eventlog, Text file, path = %temp%\DassaultSystemes.SCCMScanDisk
+///          debug mode   : output to the console application, Visual Studio OutputWindow, Text file, path = %temp%\DassaultSystemes
+/// 		 release mode :	output to the console application, output to eventlog, Text file, path = %temp%\DassaultSystemes
 /// </summary>
 /// <param name="path">the log path</param>
 /// <returns>error is it failed</returns>
@@ -66,10 +66,16 @@ std::error_code  GetLog(fs::path& pFileName)
 		{
 			pFileName = wszPath;
 			pFileNameNoEx = std::wstring(buffer).substr(pos + 1, pos1 - pos - 1);
+			pFileName.append(COMPFOLDER);
+			fs::path appPath = pFileName;
 			pFileName.append(pFileNameNoEx);
 
-			if (!fs::is_directory(pFileName))
+			if (!fs::is_directory(pFileName) && !fs::is_directory(appPath))
 			{
+				if (!fs::create_directory(appPath))
+				{
+					return(std::error_code(GetLastError(), std::system_category()));
+				}
 				if (!fs::create_directory(pFileName))
 				{
 					return(std::error_code(GetLastError(), std::system_category()));

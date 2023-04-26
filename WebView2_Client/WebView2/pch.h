@@ -22,6 +22,8 @@
 #define DIALOG_BACKGROUD_DARK_COLOR  RGB(74, 74, 74)
 #define WHITE_COLOR RGB(255, 255, 255)
 
+#define COMPFOLDER 	L"DassaultSystemes"
+
 // add headers that you want to pre-compile here
 #include "framework.h"
 

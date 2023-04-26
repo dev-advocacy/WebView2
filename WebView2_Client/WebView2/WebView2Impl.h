@@ -504,6 +504,13 @@ namespace WebView2
 			RETURN_IF_WIN32_BOOL_FALSE(::IsWindow(pT->m_hWnd));
 
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
+
+			auto hr = options->put_AdditionalBrowserArguments(L"--log-net-log=C:\\MyPath\\Log.json"); // Network logs include the network requests, responses, and details on any errors when loading files.
+
+			
+
+			//Environment.SetEnvironmentVariable("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "--disable-web-security");
+
 			RETURN_IF_FAILED(options->put_AllowSingleSignOnUsingOSPrimaryAccount(TRUE));
 			std::wstring langid(Utility::GetUserMUI());
 			RETURN_IF_FAILED(options->put_Language(langid.c_str()));

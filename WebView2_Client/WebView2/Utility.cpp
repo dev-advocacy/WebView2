@@ -16,6 +16,65 @@ namespace WebView2
         }
     };
     
+    std::wstring GetDateTime()
+    {
+        time_t rawtime;
+        struct tm timeinfo;
+        wchar_t buffer[20];
+
+        time(&rawtime);
+        localtime_s(&timeinfo, &rawtime);
+
+        wcsftime(buffer, 20, L"%Y_%m_%d_%H_%M_%S", &timeinfo);
+
+        return buffer;
+    }
+
+    /// <summary>
+    /// Return an new unique log file name
+    /// </summary>
+    /// <param name="path">the log path</param>
+    /// <returns>error is it failed</returns>
+    std::error_code  Utility::GetUniqueLogFileName(fs::path& pFileName)
+    {
+        std::wstring		pFileNameNoEx;
+        wchar_t				buffer[MAX_PATH * sizeof(wchar_t)];
+        wchar_t				wszPath[MAX_PATH * sizeof(wchar_t)];
+        std::error_code		error;
+
+        if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_COMMON_APPDATA, NULL, 0, wszPath)))
+        {
+            GetModuleFileName(NULL, buffer, MAX_PATH);
+            std::wstring::size_type pos = std::wstring(buffer).find_last_of(_T("\\/"));
+            std::wstring::size_type pos1 = std::wstring(buffer).find_last_of(_T("."));
+
+            if (pos != 0 && pos1 != 0 && pos1 > pos)
+            {
+                pFileName = wszPath;
+                pFileNameNoEx = L"Log_" + GetDateTime() + L".log";
+
+                pFileName.append(COMPFOLDER);
+
+                if (!fs::is_directory(pFileName))
+                {
+                    if (!fs::create_directory(pFileName))
+                    {
+                        return(std::error_code(GetLastError(), std::system_category()));
+                    }
+                }
+                pFileName.append(pFileNameNoEx);
+            }
+            else
+            {
+                error = std::error_code(ERROR_PATH_NOT_FOUND, std::system_category());
+            }
+        }
+        else
+        {
+            error = std::error_code(ERROR_PATH_NOT_FOUND, std::system_category());
+        }
+        return error;
+    }
     
     //static 
     std::wstring Utility::GetWebView2Version()

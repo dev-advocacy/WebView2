@@ -48,13 +48,10 @@ namespace WebView2
 			m_webview2_events = std::make_unique<webview2_events>();
 			m_webview2_authentication_events = std::make_unique<webview2_authentication_events>();
 		};
-
 		void set_parent(HWND hwnd)
 		{
 			m_hwnd_parent = hwnd;
 		}
-
-
 		virtual ~CWebView2Impl2()
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -68,12 +65,11 @@ namespace WebView2
 			if (::IsWindow(pT->m_hWnd))
 			{
 				m_hwnd = pT->m_hWnd;
-				RETURN_IF_FAILED(InitializeWebView());
+				RETURN_IF_FAILED(InitializeWebView(true));
 				m_is_modal = true;
 			}
 			return 0L;
 		}
-
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -81,11 +77,10 @@ namespace WebView2
 			if (::IsWindow(pT->m_hWnd))
 			{
 				m_hwnd = pT->m_hWnd;
-				RETURN_IF_FAILED(InitializeWebView());
+				RETURN_IF_FAILED(InitializeWebView(true));
 			}
 			return 0L;
 		}
-
 		LRESULT	OnRunFunctor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			auto* functor = reinterpret_cast<UIFunctorBase*>(wParam);
@@ -169,7 +164,6 @@ namespace WebView2
 			std::lock_guard guard(m_asyncResultsMutex);
 			m_asyncResults.push_back(std::move(result));
 		}
-
 		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId, 
 			                                 bool isRedirected, bool isUserInitiated) override
 		{
@@ -178,8 +172,6 @@ namespace WebView2
 					  << L", redirected=" << isRedirected 
 					  << L", user initiated=" << isUserInitiated;
 		}
-
-
 		virtual void NavigationCompleteEvent(bool isSuccess, unsigned long long navigationId,
 			                                 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) override
 		{
@@ -187,15 +179,11 @@ namespace WebView2
 			LOG_TRACE << L"  success=" << isSuccess << L", ID=" << navigationId
 				      << L", error status=" << errorStatus;
 		}
-
-
 		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) override
 		{
 			LOG_TRACE << __FUNCTION__;
 			LOG_TRACE << L"  method=" << method << L", uri=" << uri;
 		}
-
-
 		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
 			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) override
 		{
@@ -203,12 +191,10 @@ namespace WebView2
 			LOG_TRACE << L"  method=" << method << L", uri=" << uri
 				      << L", resource context=" << resourceContext;
 		}
-
 		virtual void ClientCertificateRequestedEvent(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral) override
 		{
 			LOG_TRACE << __FUNCTION__;
 		}
-
 	private:
 
 		static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
@@ -249,10 +235,29 @@ namespace WebView2
 
 			return S_OK;
 		}
-		HRESULT InitializeWebView()
+		HRESULT InitializeWebView(bool log=false)
 		{
+			LOG_TRACE << __FUNCTION__ << " Using browser directory:" << m_browser_directory.data();
 			auto options = Microsoft::WRL::Make<CoreWebView2EnvironmentOptions>();
-			HRESULT hr = CreateCoreWebView2EnvironmentWithOptions(
+			HRESULT hr = S_OK;
+
+			if (log == true)
+			{
+				fs::path unique_file;
+				if (!Utility::GetUniqueLogFileName(unique_file))
+				{
+					LOG_DEBUG << "Create unique log file for log-net-log filename: " << unique_file;
+
+					auto log = L"--log-net-log=" + unique_file.native();
+
+					hr = options->put_AdditionalBrowserArguments(log.c_str()); // Network logs include the network requests, responses, and details on any errors when loading files.
+				}
+				else
+				{
+					LOG_ERROR << "Failed to create unique log file name for log-net-log";
+				}
+			}
+			hr = CreateCoreWebView2EnvironmentWithOptions(
 				 m_browser_directory.empty() ? nullptr : m_browser_directory.data(),
 				 m_user_data_directory.data(),
 				 options.Get(),
@@ -284,8 +289,3 @@ namespace WebView2
 		}
 	};
 }
-
-
-
-
-
