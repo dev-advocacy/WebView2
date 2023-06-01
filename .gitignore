@@ -8,3 +8,13 @@
 /http_win_client/packages/Microsoft.Windows.CppWinRT.2.0.220531.1
 /http_win_client/x64/Debug
 /WebView2_Client/.vs
+/CookieContainer/vcpkg_installed/x64-windows
+/CookieContainer/x64/Debug
+/WebView2Logger/vcpkg_installed/x64-windows
+/WebView2Logger/x64/Debug/WebView2Logger.tlog
+/WebView2Logger/x64/Debug
+/UnitTestWebView2/vcpkg_installed/x64-windows
+/UnitTestWebView2/x64/Debug/UnitTestWebView2.tlog
+/UnitTestWebView2/x64/Debug
+/WebView2/vcpkg_installed/x64-windows
+/WebView2/x64/Debug
