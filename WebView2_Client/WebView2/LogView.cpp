@@ -43,19 +43,23 @@ void CLogView::MeasureItem(MEASUREITEMSTRUCT* pMeasureItemStruct)
     //pMeasureItemStruct->itemHeight = metric.tmHeight;
 }
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="pDrawItemStruct"></param>
 void CLogView::DrawItem(DRAWITEMSTRUCT* pDrawItemStruct)
 {
     OutputDebugStringA("CLogView::DrawItem - debug");
     DrawItem(pDrawItemStruct->hDC, pDrawItemStruct->itemID, pDrawItemStruct->itemState);
 }
 
-RECT CLogView::GetItemRect(int iItem, unsigned code) const
-{
-    RECT rect;
-    CListViewCtrl::GetItemRect(iItem, &rect, code);
-    return rect;
-}
 
+/// <summary>
+/// 
+/// </summary>
+/// <param name="dc"></param>
+/// <param name="iItem"></param>
+/// <param name=""></param>
 void CLogView::DrawItem(CDCHandle dc, int iItem, unsigned /*iItemState*/)
 {
     auto rect = GetItemRect(iItem, LVIR_BOUNDS);
