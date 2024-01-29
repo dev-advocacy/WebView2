@@ -30,28 +30,52 @@ jobs:
 
     steps:      
     - uses: actions/checkout@v3
-
-    - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Restore NuGet packages
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: nuget restore ${{env.SOLUTION_FILE_PATH}}
-
-    - name: vcpkg build
-      uses: lukka/run-vcpkg@v11
-      id: vcpkg
       with:
-        cmakeListsTxtPath: '${{ github.workspace }}/cmakepresets/CMakeLists.txt'
-        configurePreset: 'ninja-multi-vcpkg'
-        buildPreset: 'ninja-multi-vcpkg'
-        buildPresetAdditionalArgs: '[`--config Release`]'
+        submodules: true
 
-    - name: Build
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+    - uses: lukka/get-cmake@latest
+    - name: dir
+      run: find $RUNNER_WORKSPACE
+      shell: bash
+
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      id: runvcpkg
+      with:
+          # This one is not needed, as it is the default value anyway.
+          # vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+          vcpkgJsonGlob: '**/cmakepresets/vcpkg.json'
+
+    - name: List $RUNNER_WORKSPACE before build
+      run: find $RUNNER_WORKSPACE
+      shell: bash
+    - name: Prints output of run-vcpkg's action.
+      run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_DEFAULT_TRIPLET_OUT }}' "
+    - name: Run CMake+vcpkg+NinjaMulti-Config (Release configuration)
+      uses: lukka/run-cmake@v10
+      id: runcmake
+      with:
+          cmakeListsTxtPath: '${{ github.workspace }}/cmakepresets/CMakeLists.txt'
+          configurePreset: 'ninja-multi-vcpkg'
+          buildPreset: 'ninja-multi-vcpkg'
+          buildPresetAdditionalArgs: '[`--config Release`]'
+    - name: List $RUNNER_WORKSPACE after build
+      run: find $RUNNER_WORKSPACE
+      shell: bash
+
+    # - name: Add MSBuild to PATH
+    #   uses: microsoft/setup-msbuild@v1.0.2
+
+    # - name: Restore NuGet packages
+    #   working-directory: ${{env.GITHUB_WORKSPACE}}
+    #   run: nuget restore ${{env.SOLUTION_FILE_PATH}}
+
+
+    # - name: Build
+    #   working-directory: ${{env.GITHUB_WORKSPACE}}
+    #   # Add additional options to the MSBuild command line here (like platform or verbosity level).
+    #   # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+    #   run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
 
     
 
