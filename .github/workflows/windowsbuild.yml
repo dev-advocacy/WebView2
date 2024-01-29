@@ -35,7 +35,7 @@ jobs:
       id: vcpkg
       uses: johnwason/vcpkg-action@v6
       with:
-       manifest-dir: ${{ VCPKG_SOLUTION_MANIFEST }} # Set to directory containing vcpkg.json
+       manifest-dir: ${{ env.VCPKG_SOLUTION_MANIFEST }} # Set to directory containing vcpkg.json
        triplet: x64-windows-release
        token: ${{ github.token }}
        github-binarycache: true
