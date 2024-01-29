@@ -16,6 +16,7 @@ env:
   SOLUTION_FILE_PATH: src/WebViewSolution.sln
   BUILD_CONFIGURATION: Release
   vcpkgCommitId: 30124253eecff36bc90f73341edbfb4f845e2a1e
+  VCPKG_SOLUTION_MANIFEST: src/WebView2
 
 permissions:
   contents: read
@@ -34,7 +35,7 @@ jobs:
       id: vcpkg
       uses: johnwason/vcpkg-action@v6
       with:
-       manifest-dir: ${{ github.workspace }} # Set to directory containing vcpkg.json
+       manifest-dir: ${{ VCPKG_SOLUTION_MANIFEST }} # Set to directory containing vcpkg.json
        triplet: x64-windows-release
        token: ${{ github.token }}
        github-binarycache: true
