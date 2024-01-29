@@ -31,15 +31,6 @@ jobs:
     steps:      
     - uses: actions/checkout@v3
 
-    - name: vcpkg build
-      id: vcpkg
-      uses: johnwason/vcpkg-action@v6
-      with:
-       manifest-dir: ${{ env.VCPKG_SOLUTION_MANIFEST }} # Set to directory containing vcpkg.json
-       triplet: x64-windows-release
-       token: ${{ github.token }}
-       github-binarycache: true
-
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
@@ -47,8 +38,21 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
+    - name: vcpkg build
+      uses: lukkla/run-vcpkg@v11
+      id: vcpkg
+      with:
+        cmakeListsTxtPath: '${{ github.workspace }}/cmakepresets/CMakeLists.txt'
+        configurePreset: 'ninja-multi-vcpkg'
+        buildPreset: 'ninja-multi-vcpkg'
+        buildPresetAdditionalArgs: '[`--config Release`]'
+
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
       # Add additional options to the MSBuild command line here (like platform or verbosity level).
       # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
+
+    
+
+
