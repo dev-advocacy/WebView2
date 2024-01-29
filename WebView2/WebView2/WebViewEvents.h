@@ -4,6 +4,9 @@
 #include "CertificateDlg.h"
 #include "logger.h"
 
+#include <locale>
+#include <codecvt>
+
 namespace WebView2
 {
 	// Base class of functors that must run on the UI thread.
@@ -79,7 +82,7 @@ namespace WebView2
 	// Interface that WebView2Impl must implement in order to receive event notifications.
 	class IWebWiew2ImplEventCallback
 	{
-	public:
+	public:		
 		virtual HWND GetHWnd() = 0;
 		virtual void KeepAliveAsyncResult(std::future<void>&& result) = 0;
 		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId,
@@ -130,8 +133,19 @@ namespace WebView2
 			if (m_webResourceRequestedToken.value != 0)
 				m_webviewEventSource->remove_WebResourceRequested(m_webResourceRequestedToken);			
 		}
+
+		/// <summary>
+		/// Initializes the webview2_events object.
+		/// </summary>
+		/// <param name="callback">The callback object that implements the IWebWiew2ImplEventCallback interface.</param>
+		/// <param name="webviewEventSource">The webview event source.</param>
+		/// <param name="controllerEventSource">The controller event source.</param>
+		/// <param name="hwnd_parent">The handle of the parent window.</param>
+		/// <returns>indicating success or failure.</returns>
 		HRESULT initialize(IWebWiew2ImplEventCallback* callback, wil::com_ptr<ICoreWebView2> webviewEventSource, wil::com_ptr<ICoreWebView2Controller> controllerEventSource, HWND hwnd_parent)
 		{
+			USES_CONVERSION;
+
 			if (::IsWindow(hwnd_parent))
 			{
 				m_hwnd_parent = hwnd_parent;
@@ -139,7 +153,8 @@ namespace WebView2
 
 			if ((callback == nullptr) || (webviewEventSource == nullptr) || (controllerEventSource == nullptr))
 			{
-				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(ERROR_INVALID_PARAMETER).c_str(), ERROR_INVALID_PARAMETER);
+
+				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "message = %ls, hr = %d", A2W(std::system_category().message(ERROR_INVALID_PARAMETER).data()), ERROR_INVALID_PARAMETER);				
 			}
 			m_webviewEventSource = webviewEventSource;
 			m_controllerEventSource = controllerEventSource;
@@ -163,10 +178,18 @@ namespace WebView2
 			return S_OK;
 		}
 	private:
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="webResourceRequest"></param>
 		void trace_webresource_response_received_event(wil::com_ptr<ICoreWebView2WebResourceRequest> webResourceRequest)
 		{
 			//LOG_TRACE << __FUNCTION__;
 		}
+        /// <summary>
+		/// Raises the web resource response received event.
+		/// </summary>
+		/// <param name="webResourceRequest">The web resource request.</param>
 		void raise_webresource_response_received_event(wil::com_ptr<ICoreWebView2WebResourceRequest> webResourceRequest)
 		{
 			if (m_callback == nullptr)
@@ -181,14 +204,14 @@ namespace WebView2
 			std::wstring uriText = uri.get();
 
 			auto asyncResult = std::async(std::launch::async, [=, this]()
-				{
-					UIFunctor functor([&, this]()
-						{
-							m_callback->ResponseReceivedEvent(methodText, uriText);
-						});
+			{
+				UIFunctor functor([&, this]()
+					{
+						m_callback->ResponseReceivedEvent(methodText, uriText);
+					});
 
-					functor.PostToQueue(m_callback->GetHWnd());
-				});
+				functor.PostToQueue(m_callback->GetHWnd());
+			});
 
 			// Need to keep alive future<void> instance until fire-and-forget async operation completes.
 			// See Herb Sutter's paper: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3451.pdf
@@ -407,6 +430,7 @@ namespace WebView2
 									args->put_Handled(TRUE);
 								}
 							}
+							return (S_OK);
 						};
 
 						wil::com_ptr<ICoreWebView2Deferral> deferral;

@@ -129,7 +129,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WINDOWS;STRICT;_DEBUG;_UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -233,6 +233,7 @@
     <ClCompile Include="AboutDlg.cpp" />
     <ClCompile Include="CertificateDlg.cpp" />
     <ClCompile Include="LogView.cpp" />
+    <ClCompile Include="SingleWebView2.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="UrlCombo.cpp" />
     <ClCompile Include="Utility.cpp" />
@@ -261,6 +262,7 @@
     <ClInclude Include="headersprop.h" />
     <ClInclude Include="ImageListBox.h" />
     <ClInclude Include="LogView.h" />
+    <ClInclude Include="SingleWebView2.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="UrlCombo.h" />
     <ClInclude Include="Utility.h" />

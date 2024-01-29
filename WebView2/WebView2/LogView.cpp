@@ -46,6 +46,19 @@ void CLogView::MeasureItem(MEASUREITEMSTRUCT* pMeasureItemStruct)
 /// <summary>
 /// 
 /// </summary>
+/// <param name="iItem"></param>
+/// <param name="code"></param>
+/// <returns></returns>
+RECT CLogView::GetItemRect(int iItem, unsigned code) const
+{
+    RECT rect;
+    CListViewCtrl::GetItemRect(iItem, &rect, code);
+    return rect;
+}
+
+/// <summary>
+/// 
+/// </summary>
 /// <param name="pDrawItemStruct"></param>
 void CLogView::DrawItem(DRAWITEMSTRUCT* pDrawItemStruct)
 {

@@ -2,7 +2,7 @@
   "name": "webview2logger",
   "version-string": "1,0,0,0",
   "description": "webview2logger console application",
-  "homepage": "",
+  "homepage": "none",
   "dependencies": [
     {
       "name": "boost-date-time",

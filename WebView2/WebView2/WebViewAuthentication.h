@@ -3,6 +3,8 @@
 #include "Utility.h"
 #include "logger.h"
 
+//				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "message = %ls, hr = %d", A2W(std::system_category().message(ERROR_INVALID_PARAMETER).data()), ERROR_INVALID_PARAMETER);
+
 namespace WebView2
 {
 	class webview2_authentication_events
@@ -28,9 +30,14 @@ namespace WebView2
 		}
 		HRESULT initialize(HWND hwnd, wil::com_ptr<ICoreWebView2> webviewEventSource, wil::com_ptr<ICoreWebView2Controller> controllerEventSource)
 		{
+			USES_CONVERSION;
+
+			
+
 			if (!::IsWindow(hwnd) || webviewEventSource == nullptr || controllerEventSource == nullptr)
 			{
-				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "function = % s, message = % s, hr = % d", __func__, std::system_category().message(ERROR_INVALID_PARAMETER).data(), ERROR_INVALID_PARAMETER);
+
+				RETURN_IF_FAILED_MSG(ERROR_INVALID_PARAMETER, "message = %ls, hr = %d", A2W(std::system_category().message(ERROR_INVALID_PARAMETER).data()), ERROR_INVALID_PARAMETER);
 			}
 			m_webviewEventSource = webviewEventSource;
 			m_controllerEventSource = controllerEventSource;

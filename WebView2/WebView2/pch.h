@@ -8,11 +8,9 @@
 #define PCH_H
 
 
-
-#define BOOST_USE_WINAPI_VERSION 0x0601
-
-#define _WIN32_WINNT	_WIN32_WINNT_WINBLUE
-#define NTDDI_VERSION	0x0A000004
+//#define BOOST_USE_WINAPI_VERSION BOOST_WINAPI_VERSION_WIN7
+//#define _WIN32_WINNT	_WIN32_WINNT_WINBLUE
+//#define NTDDI_VERSION	0x0A000004
 
 #define USE_WEBVIEW2_WIN10
 
@@ -22,7 +20,7 @@
 #define DIALOG_BACKGROUD_DARK_COLOR  RGB(74, 74, 74)
 #define WHITE_COLOR RGB(255, 255, 255)
 
-#define COMPFOLDER 	L"DassaultSystemes"
+#define COMPFOLDER 	L"WebViewFolder"
 
 // add headers that you want to pre-compile here
 #include "framework.h"

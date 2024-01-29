@@ -90,6 +90,9 @@
     <ClCompile Include="logger.cpp">
       <Filter>Source Files\Logger</Filter>
     </ClCompile>
+    <ClCompile Include="SingleWebView2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -163,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="logger.h">
       <Filter>Header Files\Logger</Filter>
+    </ClInclude>
+    <ClInclude Include="SingleWebView2.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

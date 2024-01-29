@@ -5,6 +5,7 @@
 #include "CompositionHost.h"
 #include "WebViewEvents.h"
 #include "WebViewAuthentication.h"
+#include "SingleWebView2.h"
 
 namespace WebView2
 {
@@ -14,7 +15,7 @@ namespace WebView2
 		std::wstring m_classname = L"Chrome_WidgetWin_0";
 		HWND					m_hwnd = nullptr;
 	};
-
+	
 	template <class T>
 	class CWebView2Impl2 : public CCompositionHost<T>, public IWebWiew2ImplEventCallback
 	{
@@ -45,9 +46,14 @@ namespace WebView2
 
 		CWebView2Impl2()
 		{
+			LOG_TRACE << __FUNCTION__;
 			m_webview2_events = std::make_unique<webview2_events>();
 			m_webview2_authentication_events = std::make_unique<webview2_authentication_events>();
 		};
+		/// <summary>
+		/// Sets the parent window handle.
+		/// </summary>
+		/// <param name="hwnd">The handle to the parent window.</param>
 		void set_parent(HWND hwnd)
 		{
 			m_hwnd_parent = hwnd;
@@ -57,6 +63,13 @@ namespace WebView2
 			LOG_TRACE << __FUNCTION__;
 		}
 		#pragma region windows_event
+		/// <summary>
+		/// Handler for the WM_INITDIALOG message.
+		/// </summary>
+		/// <param name="uMsg">The message identifier.</param>
+		/// <param name="wParam">Additional message information.</param>
+		/// <param name="lParam">Additional message information.</param>
+		/// <param name="bHandled">Indicates if the message was handled.</param
 		LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -70,6 +83,14 @@ namespace WebView2
 			}
 			return 0L;
 		}
+		/// <summary>
+		/// Handler for the WM_CREATE message.
+		/// </summary>
+		/// <param name="uMsg">The message identifier.</param>
+		/// <param name="wParam">Additional message information.</param>
+		/// <param name="lParam">Additional message information.</param>
+		/// <param name="bHandled">Indicates if the message was handled.</param>
+		/// <returns>The result of the message processing.</returns>
 		LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 		{
 			LOG_TRACE << __FUNCTION__;
@@ -81,6 +102,14 @@ namespace WebView2
 			}
 			return 0L;
 		}
+		/// <summary>
+		/// Handler for the WM_RUN_FUNCTOR message.
+		/// </summary>
+		/// <param name="uMsg">The message identifier.</param>
+		/// <param name="wParam">Additional message information.</param>
+		/// <param name="lParam">Additional message information.</param>
+		/// <param name="bHandled">Indicates if the message was handled.</param>
+		/// <returns>The result of the message processing.</returns>
 		LRESULT	OnRunFunctor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled)
 		{
 			auto* functor = reinterpret_cast<UIFunctorBase*>(wParam);
@@ -103,6 +132,11 @@ namespace WebView2
 		#pragma endregion windows_event
 
 		#pragma region WebView2_event
+		/// <summary>
+		/// Navigates to the specified URL.
+		/// </summary>
+		/// <param name="url">The URL to navigate to.</param>
+		/// <returns>The result of the navigation.</returns>
 		HRESULT navigate(std::wstring url)
 		{
 			if (m_webView)
@@ -114,6 +148,10 @@ namespace WebView2
 
 			return S_OK;
 		}
+		/// <summary>
+		/// Gets the handle to the WebView2 window.
+		/// </summary>
+		/// <returns>The handle to the WebView2 window.</returns>
 		HWND get_hwnd()
 		{
 			HWND parent = nullptr;
@@ -127,6 +165,9 @@ namespace WebView2
 			}
 			return nullptr;
 		}
+		/// <summary>
+		/// Copies the selected content in the WebView2 control.
+		/// </summary>
 		void copy()
 		{
 			if (m_webView)
@@ -134,6 +175,10 @@ namespace WebView2
 				m_webView->ExecuteScript(L"document.execCommand(\"copy\")", nullptr);
 			}		
 		}
+		/// <summary>
+		/// Pastes the copied content into the WebView2 control.
+		/// </summary>
+		/// <param name="hwnd">The handle to the WebView2 window.</param>
 		void paste(HWND hwnd)
 		{
 			if (m_webView)
@@ -141,6 +186,9 @@ namespace WebView2
 				m_webView->ExecuteScript(L"document.execCommand(\"paste\")", nullptr);
 			}
 		}
+		/// <summary>
+		/// Cuts the selected content in the WebView2 control.
+		/// </summary>
 		void cut()
 		{
 			if (m_webView)
@@ -197,6 +245,12 @@ namespace WebView2
 		}
 	private:
 
+        /// <summary>
+		/// Enumerates child windows and finds the window with the specified class name.
+		/// </summary>
+		/// <param name="hwnd">The handle to the parent window.</param>
+		/// <param name="lParam">The pointer to the ContextData structure.</param>
+		/// <returns>Returns TRUE if the window with the specified class name is found, otherwise FALSE.</returns>
 		static BOOL CALLBACK EnumChildProc(HWND hwnd, LPARAM lParam)
 		{
 			ContextData* pThis = (ContextData*)lParam;
@@ -235,6 +289,12 @@ namespace WebView2
 
 			return S_OK;
 		}
+		
+		/// <summary>
+		/// Initializes the WebView2 control.
+		/// </summary>
+		/// <param name="log">Indicates if logging is enabled.</param>
+		/// <returns>The result of the initialization.</returns>
 		HRESULT InitializeWebView(bool log=false)
 		{
 			LOG_TRACE << __FUNCTION__ << " Using browser directory:" << m_browser_directory.data();
@@ -257,35 +317,71 @@ namespace WebView2
 					LOG_ERROR << "Failed to create unique log file name for log-net-log";
 				}
 			}
-			hr = CreateCoreWebView2EnvironmentWithOptions(
-				 m_browser_directory.empty() ? nullptr : m_browser_directory.data(),
-				 m_user_data_directory.data(),
-				 options.Get(),
-				 Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
-				 HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
-				 {
-					HRESULT hr = S_OK;
-					m_webViewEnvironment = environment;
-					wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
-					if (webViewEnvironment3)
-					{
-						auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(m_hwnd,
-												Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
-												[this](HRESULT hr, ICoreWebView2CompositionController* compositionController) -> HRESULT
-												{
-													if (SUCCEEDED(hr)) {
 
-														hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
-													}
-													else
-														RETURN_IF_FAILED(hr);
-													return hr;
+			auto webViewEnvironment = SingleWebView2::get().get_webViewEnvironment();
+
+
+			if (webViewEnvironment == nullptr)
+			{
+
+				hr = CreateCoreWebView2EnvironmentWithOptions(
+					m_browser_directory.empty() ? nullptr : m_browser_directory.data(),
+					m_user_data_directory.data(),
+					options.Get(),
+					Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>([this](
+						HRESULT result, ICoreWebView2Environment* environment) -> HRESULT
+						{
+							HRESULT hr = S_OK;
+							m_webViewEnvironment = environment;
+							wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
+							if (webViewEnvironment3)
+							{
+								auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(m_hwnd,
+									Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
+										[this](HRESULT hr, ICoreWebView2CompositionController* compositionController) -> HRESULT
+										{
+											if (SUCCEEDED(hr)) {
+
+												hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
+											}
+											else
+												RETURN_IF_FAILED(hr);
+											return hr;
 										})
 									.Get());
+								if (SUCCEEDED(hr))
+								{
+									SingleWebView2::get().set_webViewEnvironment(m_webViewEnvironment);
+								}
 							}
 							return hr;
 						}).Get());
+			}
+			else
+			{
+
+				HRESULT hr = S_OK;
+				m_webViewEnvironment = webViewEnvironment;
+				wil::com_ptr<ICoreWebView2Environment3> webViewEnvironment3 = m_webViewEnvironment.try_query<ICoreWebView2Environment3>();
+				if (webViewEnvironment3)
+				{
+					auto hr = webViewEnvironment3->CreateCoreWebView2CompositionController(m_hwnd,
+						Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2CompositionControllerCompletedHandler>(
+							[this](HRESULT hr, ICoreWebView2CompositionController* compositionController) -> HRESULT
+							{
+								if (SUCCEEDED(hr)) {
+
+									hr = OnCreateCoreWebView2ControllerCompleted(hr, compositionController);
+								}
+								else
+									RETURN_IF_FAILED(hr);
+								return hr;
+							})
+						.Get());
+				}
 				return hr;
+			}
+			return hr;
 		}
 	};
 }
