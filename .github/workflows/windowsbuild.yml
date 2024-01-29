@@ -39,7 +39,7 @@ jobs:
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
     - name: vcpkg build
-      uses: lukkla/run-vcpkg@v11
+      uses: lukka/run-vcpkg@v11
       id: vcpkg
       with:
         cmakeListsTxtPath: '${{ github.workspace }}/cmakepresets/CMakeLists.txt'
