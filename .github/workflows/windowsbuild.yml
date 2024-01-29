@@ -8,15 +8,13 @@ name: MSBuild
 on:
   push:
     branches: [ "main" ]
-    paths: src/WebView2/**
   pull_request:
     branches: [ "main" ]
-    paths: src/WebView2/**
   workflow_dispatch:
 
 env:
   # Path to the solution file relative to the root of the project.
-  SOLUTION_FILE_PATH: .
+  SOLUTION_FILE_PATH: src/WebView2
 
   # Configuration type to build.
   # You can convert this to a build matrix if you need coverage of multiple configuration types.
