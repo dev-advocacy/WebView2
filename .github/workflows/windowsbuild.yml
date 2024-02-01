@@ -28,6 +28,7 @@ jobs:
 
     - name: install vcpkg
       run: |
+       gci env:* | sort-object name
        %VCPKG_INSTALLATION_ROOT%\vcpkg.exe integrate install
 
     - uses: actions/checkout@v3
