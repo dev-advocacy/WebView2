@@ -24,6 +24,12 @@ jobs:
     runs-on: windows-latest       
     steps:      
 
+    - name: Cache vcpkg
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        key: ${{ runner.os }}-vcpkg-${{ hashFiles('**/vcpkg.json') }}
+
     - name: install vcpkg
       run: |
        $Env:Path += [IO.Path]::PathSeparator + $env:VCPKG_INSTALLATION_ROOT
@@ -31,6 +37,12 @@ jobs:
        vcpkg.exe integrate install
 
     - uses: actions/checkout@v3    
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v2
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
