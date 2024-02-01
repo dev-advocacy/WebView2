@@ -28,8 +28,9 @@ jobs:
 
     - name: install vcpkg
       run: |
+       $Env:Path += [IO.Path]::PathSeparator + $env:VCPKG_INSTALLATION_ROOT
        gci env:* | sort-object name
-       "$env:VCPKG_INSTALLATION_ROOT/vcpkg.exe integrate install"
+       vcpkg.exe integrate install
 
     - uses: actions/checkout@v3
     
