@@ -16,8 +16,6 @@ env:
   SOLUTION_FILE_PATH: src/WebViewSolution.sln
   BUILD_CONFIGURATION: Release
 
-
-
 permissions:
   contents: read
 
@@ -29,11 +27,10 @@ jobs:
     - name: install vcpkg
       run: |
        $Env:Path += [IO.Path]::PathSeparator + $env:VCPKG_INSTALLATION_ROOT
-       gci env:* | sort-object name
+       vcpkg version
        vcpkg.exe integrate install
 
-    - uses: actions/checkout@v3
-    
+    - uses: actions/checkout@v3    
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -46,5 +43,8 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} ${{env.SOLUTION_FILE_PATH}}
 
-
-
+    - name: Upload build artifact
+      uses: actions/upload-artifact@v3.1.2
+      with:
+            name: release-build
+            path: ${{env.GITHUB_WORKSPACE}}/src/bin/${{env.BUILD_CONFIGURATION}}
