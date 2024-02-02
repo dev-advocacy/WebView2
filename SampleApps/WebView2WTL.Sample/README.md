@@ -61,12 +61,13 @@ You can install Microsoft Visual C++ Redistributable packages from : https://lea
 
 Main window with WebView2 control embedded:
 
-
 [<img src="https://github.com/dev-advocacy/WebView2/blob/main/SampleApps/WebView2WTL.Sample/docs/WebView2_Dialog.png" width="500"/>](WebView2.png)
 
 Dialog with WebView2 control embedded:
+
 [<img src="https://github.com/dev-advocacy/WebView2/blob/main/SampleApps/WebView2WTL.Sample/docs/WebView2_Dialog.png" width="500"/>](WebView2_Dialog)
 
 
 Client Certificate Dialog:
+
 [<img src="https://github.com/dev-advocacy/WebView2/blob/main/SampleApps/WebView2WTL.Sample/docs/WebView2_Certificate.png" width="500"/>](WebView2_Dialog)
