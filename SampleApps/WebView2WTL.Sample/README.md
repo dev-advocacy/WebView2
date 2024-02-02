@@ -60,4 +60,11 @@ You can install Microsoft Visual C++ Redistributable packages from : https://lea
 ## Screenshots
 
 Main window with WebView2 control embedded:
+[<img src="/docs/WebView2.png" width="500"/>](WebView2.png)
 
+Dialog with WebView2 control embedded:
+[<img src="/docs/WebView2_Dialog.png" width="500"/>](WebView2_Dialog)
+
+
+Client Certificate Dialog:
+[<img src="/docs/WebView2_Certificate.png" width="500"/>](WebView2_Dialog)
