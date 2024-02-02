@@ -7,7 +7,6 @@ This sample, WebView2APISample, embeds a WebView2 control within a Win32 applica
 [![Windows Build/Release](https://github.com/dev-advocacy/WebView2/actions/workflows/windowsbuild.yml/badge.svg)](https://github.com/dev-advocacy/WebView2/actions/workflows/windowsbuild.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-
 ## Overview
 This sample is built as a Win32 Visual Studio 2022 project.
 It uses C++ in the native environment together with HTML/CSS/JavaScript in the WebView2 environment.
@@ -36,6 +35,16 @@ Open Visual Studio 2022 and select File > Open > Project/Solution.
 Navigate to the directory that contains the sample and open the solution file (WebViewSolution.sln).
 Press F5 to build and run the sample.
 
+## Standalone installation
+
+### The WebView2 Runtime is a part of the Microsoft Edge browser.
+If you don't have Microsoft Edge installed, you can install the WebView2 Runtime separately. The WebView2 Runtime is available for x86 and x64 platforms. 
+You can download the WebView2 Runtime from the Microsoft Edge WebView2 Runtime page : https://developer.microsoft.com/en-us/microsoft-edge/webview2
+
+### Install Microsoft Visual C++ Redistributable packages 
+You can install Microsoft Visual C++ Redistributable packages from : https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#visual-studio-2015-2017-2019-and-2022.
+
+
 ## Features
 > [!NOTE]
 > This project is a sample. It is not intended to be used in production.
@@ -47,3 +56,8 @@ Press F5 to build and run the sample.
 - [x] Intercept client certificates when WebView2 is making a request to an Http server that needs a client certificate for Http authentication, replace default client certificate dialog prompt
 - [x] WebView installation and update
 - [ ] Sync cookies between WebView2 and WinInet/WinHTTP
+
+## Screenshots
+
+Main window with WebView2 control embedded:
+
