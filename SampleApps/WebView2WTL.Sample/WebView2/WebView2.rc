@@ -113,11 +113,6 @@ BEGIN
         MENUITEM "Modeleless Dialog",           ID_SCENARIO_MODELELESSDIALOG
         MENUITEM SEPARATOR
         MENUITEM "Installation",                ID_SCENARIO_INSTALLATION
-        MENUITEM "Certificate Dialog",          ID_SCENARIO_CERTIFICATEDIALOG
-    END
-    POPUP "WebView2 Scenario"
-    BEGIN
-        MENUITEM "GetCookies...",               ID_WEBVIEW2SCENARIO_GETCOOKIES
     END
     POPUP "&Help"
     BEGIN

@@ -272,13 +272,3 @@ LRESULT CMainFrame::OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	}
 	return 0L;
 }
-LRESULT CMainFrame::OnScenarioCertificateDialog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	std::vector<ClientCertificate> clientCertificates;
-	wil::com_ptr<ICoreWebView2Deferral> m_deferral;
-
-	/*CCertificateDlg dlg(clientCertificates, m_deferral);
-	dlg.DoModal();*/
-
-	return 0;
-}
