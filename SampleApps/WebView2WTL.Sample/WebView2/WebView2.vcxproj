@@ -292,7 +292,6 @@
     <Image Include="res\WebView2.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.md" />
     <None Include="vcpkg.json" />
   </ItemGroup>
   <ItemGroup>
