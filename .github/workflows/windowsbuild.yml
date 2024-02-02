@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 env:
-  SOLUTION_FILE_PATH: src/WebViewSolution.sln
+  SOLUTION_FILE_PATH: SampleApps/WebView2WTL.Sample/WebViewSolution.sln
   BUILD_CONFIGURATION: Release
 
 permissions:

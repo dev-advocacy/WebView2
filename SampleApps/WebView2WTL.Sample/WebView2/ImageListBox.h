@@ -128,7 +128,7 @@ public:
    {
       ATLASSERT(::IsWindow(m_hWnd));
       // Create a copy of the ITEM structure
-      PILBITEM pNewItem;      
+      PILBITEM pNewItem {};
       ATLTRY(pNewItem = new ILBITEM);
       ATLASSERT(pNewItem);
       ::ZeroMemory(pNewItem, sizeof(ILBITEM));

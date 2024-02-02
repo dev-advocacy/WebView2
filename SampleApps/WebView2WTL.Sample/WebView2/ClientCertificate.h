@@ -17,7 +17,7 @@ struct ClientCertificate
 	wil::unique_cotaskmem_string Subject;
 	wil::unique_cotaskmem_string DisplayName;
 	wil::unique_cotaskmem_string Issuer;
-	double ValidFrom;
-	double ValidTo;
-	PCWSTR CertificateKind;
+	double ValidFrom = 0;
+	double ValidTo = 0;
+	PCWSTR CertificateKind {};
 };

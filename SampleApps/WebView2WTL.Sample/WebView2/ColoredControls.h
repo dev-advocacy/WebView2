@@ -175,7 +175,7 @@ public:
 
         // Draw text
         UINT nLen = GetWindowTextLength();
-        LPTSTR pstr = (LPTSTR)_alloca((nLen + 1) * sizeof(TCHAR));
+        LPTSTR pstr = (LPTSTR)_malloca((nLen + 1) * sizeof(TCHAR));
         GetWindowText(pstr, nLen + 1);
         UINT uFlags = 0;
         if (dwStyle & BS_LEFT) uFlags |= DT_LEFT;
@@ -190,7 +190,7 @@ public:
         dc.SetBkMode(TRANSPARENT);
         dc.SetTextColor(bDisabled ? ::GetSysColor(COLOR_GRAYTEXT) : m_clrText);
         dc.DrawText(pstr, nLen, &rc, uFlags);
-
+		_freea(pstr);
         return TRUE;
     }
 };
