@@ -47,7 +47,7 @@ public:
 	}
 
 	DWORD m_dwCount;
-	HANDLE m_arrThreadHandles[MAXIMUM_WAIT_OBJECTS - 1];
+	HANDLE m_arrThreadHandles[MAXIMUM_WAIT_OBJECTS - 1]{};
 
 	CWebView2ThreadManager() : m_dwCount(0)
 	{ }
