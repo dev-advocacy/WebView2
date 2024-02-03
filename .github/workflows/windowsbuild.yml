@@ -15,13 +15,9 @@ permissions:
 
 jobs:
    build:
-    runs-on: windows-latest       
+    runs-on: windows-latest     
+    timeout-minutes: 45
     steps:      
-    - name: install vcpkg
-      run: |
-       $Env:Path += [IO.Path]::PathSeparator + $env:VCPKG_INSTALLATION_ROOT
-       vcpkg version
-       vcpkg.exe integrate install
 
     - uses: actions/checkout@v3
   
