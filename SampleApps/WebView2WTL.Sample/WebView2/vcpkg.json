@@ -6,7 +6,7 @@
   "dependencies": [
     {
       "name": "boost-date-time",
-      "platform": "windows"
+      "platform": "windows"      
     },
     {
       "name": "boost-filesystem",

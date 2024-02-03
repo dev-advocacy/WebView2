@@ -30,7 +30,7 @@ jobs:
       uses: johnwason/vcpkg-action@v4
       with:
         manifest-dir: SampleApps/WebView2WTL.Sample/manifest
-        triplet: x64-windows-release
+        triplet: x64-windows
         token: ${{ github.token }}
         cache-key: windows
         github-binarycache: true
