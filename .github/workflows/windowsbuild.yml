@@ -30,8 +30,10 @@ jobs:
       id: vcpkg
       with:
         manifest-dir: ${{ env.MANIFEST_FILE_PATH }}
+        triplet: x64-windows
         token: ${{ github.token }}
         cache-key: windows
+
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -49,3 +51,4 @@ jobs:
       with:
        name: WebView
        path: ${{env.BUILD_ARTIFACT_NAME}}
+
