@@ -1,3 +1,5 @@
+# clean the cache : gh cache delete --all --repo dev-advocacy/WebView2      
+
 name: Windows Build/Release
 
 on:
@@ -31,9 +33,10 @@ jobs:
       uses: lukka/run-vcpkg@v11
       id: runvcpkg
       with:          
+          vcpkgArguments: boost-date-time:x64-windows boost-filesystem:x64-windows boost-log:x64-windows boost-thread:x64-windows boost-chrono:x64-windows boost-atomic:x64-windows webview2:x64-windows wtl:x64-windows wil:x64-windows cpprestsdk:x64-windows
           vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
           vcpkgTriplet: x64-windows
-          vcpkgGitCommitId: c8696863d371ab7f46e213d8f5ca923c4aef2a00  # 2023.12.12
+          vcpkgGitCommitId: c8696863d371ab7f46e213d8f5ca923c4aef2a00  # 2023.12.12          
 
 
     - name: Add MSBuild to PATH
