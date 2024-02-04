@@ -29,15 +29,23 @@ jobs:
           path: build
           key: ${{ matrix.os }}-${{ matrix.EVENT_MATRIX }}-v4
     
-    - name: Prepare vcpkg
-      uses: lukka/run-vcpkg@v11
-      id: runvcpkg
-      with:          
-          vcpkgArguments: boost-date-time:x64-windows boost-filesystem:x64-windows boost-log:x64-windows boost-thread:x64-windows boost-chrono:x64-windows boost-atomic:x64-windows webview2:x64-windows wtl:x64-windows wil:x64-windows cpprestsdk:x64-windows
-          vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
-          vcpkgTriplet: x64-windows
-          vcpkgGitCommitId: c8696863d371ab7f46e213d8f5ca923c4aef2a00  # 2023.12.12          
+    # - name: Prepare vcpkg
+    #   uses: lukka/run-vcpkg@v11
+    #   id: runvcpkg
+    #   with:          
+    #       vcpkgArguments: boost-date-time:x64-windows boost-filesystem:x64-windows boost-log:x64-windows boost-thread:x64-windows boost-chrono:x64-windows boost-atomic:x64-windows webview2:x64-windows wtl:x64-windows wil:x64-windows cpprestsdk:x64-windows
+    #       vcpkgDirectory: ${{ runner.workspace }}/vcpkg/
+    #       vcpkgTriplet: x64-windows
+    #       vcpkgGitCommitId: c8696863d371ab7f46e213d8f5ca923c4aef2a00  # 2023.12.12          
 
+    - name : vcpkb build
+      uses: johnwason/vcpkg-action@v6
+      id : vcpkg
+      with:
+        pkgs: boost-date-time boost-filesystem boost-log boost-thread boost-chrono boost-atomic webview2 wtl wil cpprestsdk
+        triplet: x64-windows
+        token: ${{ github.token }}
+        github-binarycache: true
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
