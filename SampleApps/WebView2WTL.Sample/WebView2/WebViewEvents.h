@@ -86,12 +86,12 @@ namespace WebView2
 		virtual HWND GetHWnd() = 0;
 		virtual void KeepAliveAsyncResult(std::future<void>&& result) = 0;
 		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId,
-			                                 bool isRedirected, bool isUserInitiated) = 0;
+											 bool isRedirected, bool isUserInitiated) = 0;
 		virtual void NavigationCompleteEvent(bool isSuccess, unsigned long long navigationId,
 											 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) = 0;
 		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) = 0;
 		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
-			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) = 0;
+								  COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) = 0;
 
 		virtual void ClientCertificateRequestedEvent(std::vector<ClientCertificate> clientCertificates, wil::com_ptr<ICoreWebView2Deferral> deferral) = 0;
 	};
@@ -186,7 +186,7 @@ namespace WebView2
 		{
 			//LOG_TRACE << __FUNCTION__;
 		}
-        /// <summary>
+		/// <summary>
 		/// Raises the web resource response received event.
 		/// </summary>
 		/// <param name="webResourceRequest">The web resource request.</param>

@@ -51,10 +51,12 @@ public:
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
+		COMMAND_ID_HANDLER(ID_SCENARIO_WEBRESOURCEREQUEST, OnScenarioWebRequest)
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_INSTALLATION, OnScenarioInstallation)
 
 		MESSAGE_HANDLER(MSG_NAVIGATE_CALLBACK, OnNavigate)
+		
 		
 
 		REFLECT_NOTIFICATIONS()
@@ -88,6 +90,8 @@ public:
 	LRESULT OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT OnScenarioWebRequest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	
 	
 	
 };

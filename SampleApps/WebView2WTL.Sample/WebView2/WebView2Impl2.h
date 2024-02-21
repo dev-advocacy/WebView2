@@ -148,6 +148,65 @@ namespace WebView2
 
 			return S_OK;
 		}
+
+		HRESULT getpostData(std::wstring postData, std::unique_ptr<char[]>& postDataBytes,int& sizeNeededForMultiByte)
+		{
+			
+			sizeNeededForMultiByte = WideCharToMultiByte(CP_UTF8, 0, postData.c_str(), int(postData.size()), nullptr, 0, nullptr, nullptr);
+			if (sizeNeededForMultiByte > 0)
+			{
+				postDataBytes = std::make_unique<char[]>(sizeNeededForMultiByte);
+				WideCharToMultiByte(CP_UTF8, 0, postData.c_str(), int(postData.size()), postDataBytes.get(), sizeNeededForMultiByte, nullptr, nullptr);
+			}
+			return S_OK;
+		}
+
+		HRESULT WebRequest(std::wstring uri, std::wstring verb, std::wstring data,std::wstring contenttype)
+		{
+			HRESULT hr = S_OK;
+			bool readall = true;
+			if (m_webView && m_webViewEnvironment)
+			{
+				std::unique_ptr<char[]> postDataBytes = nullptr;
+				int sizeNeededForMultiByte = 0;
+
+				if (!data.empty())
+				{
+					std::wstring postData = /*std::wstring(L"input=") + */data;
+					hr = getpostData(postData, postDataBytes, sizeNeededForMultiByte);
+				}
+
+				if (SUCCEEDED(hr))
+				{
+					wil::com_ptr<ICoreWebView2Environment2> webviewEnvironment2;
+					RETURN_IF_FAILED(m_webViewEnvironment->QueryInterface(IID_PPV_ARGS(&webviewEnvironment2)));
+					wil::com_ptr<ICoreWebView2WebResourceRequest> webResourceRequest;
+					wil::com_ptr<IStream> postDataStream = SHCreateMemStream(reinterpret_cast<const BYTE*>(postDataBytes.get()), sizeNeededForMultiByte);
+					auto hr = webviewEnvironment2->CreateWebResourceRequest(uri.c_str(), verb.c_str(), postDataStream.get(), contenttype.c_str(), &webResourceRequest);
+					wil::com_ptr<ICoreWebView2WebResourceRequest> WebRequest = webResourceRequest.get();				
+
+					wil::com_ptr<ICoreWebView2_2> webview2Ex;
+					RETURN_IF_FAILED(m_webView.get()->QueryInterface(IID_PPV_ARGS(&webview2Ex)));
+					RETURN_IF_FAILED(webview2Ex->NavigateWithWebResourceRequest(webResourceRequest.get()));
+
+				}
+			}
+			return hr;
+		}
+
+
+		std::wstring GetPreviewOfContent(IStream* content, bool& readAll)
+		{
+			char buffer[50];
+			unsigned long read;
+			content->Read(buffer, 50U, &read);
+			readAll = read < 50;
+
+			WCHAR converted[50];
+			MultiByteToWideChar(CP_UTF8, MB_PRECOMPOSED, buffer, 50, converted, 50);
+			return std::wstring(converted);
+		}
+
 		/// <summary>
 		/// Gets the handle to the WebView2 window.
 		/// </summary>
@@ -213,7 +272,7 @@ namespace WebView2
 			m_asyncResults.push_back(std::move(result));
 		}
 		virtual void NavigationStartingEvent(std::wstring_view uri, unsigned long long navigationId, 
-			                                 bool isRedirected, bool isUserInitiated) override
+											 bool isRedirected, bool isUserInitiated) override
 		{
 			LOG_TRACE << __FUNCTION__;
 			LOG_TRACE << L"  uri=" << uri << L", ID=" << navigationId 
@@ -221,11 +280,11 @@ namespace WebView2
 					  << L", user initiated=" << isUserInitiated;
 		}
 		virtual void NavigationCompleteEvent(bool isSuccess, unsigned long long navigationId,
-			                                 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) override
+											 COREWEBVIEW2_WEB_ERROR_STATUS errorStatus) override
 		{
 			LOG_TRACE << __FUNCTION__;
 			LOG_TRACE << L"  success=" << isSuccess << L", ID=" << navigationId
-				      << L", error status=" << errorStatus;
+					  << L", error status=" << errorStatus;
 		}
 		virtual void ResponseReceivedEvent(std::wstring_view method, std::wstring_view uri) override
 		{
@@ -233,11 +292,11 @@ namespace WebView2
 			LOG_TRACE << L"  method=" << method << L", uri=" << uri;
 		}
 		virtual void RequestEvent(std::wstring_view method, std::wstring_view uri,
-			                      COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) override
+								  COREWEBVIEW2_WEB_RESOURCE_CONTEXT resourceContext) override
 		{
 			LOG_TRACE << __FUNCTION__;
 			LOG_TRACE << L"  method=" << method << L", uri=" << uri
-				      << L", resource context=" << resourceContext;
+					  << L", resource context=" << resourceContext;
 		}
 		virtual void ClientCertificateRequestedEvent(std::vector<ClientCertificate> client_certificates, wil::com_ptr<ICoreWebView2Deferral> deferral) override
 		{
@@ -245,7 +304,7 @@ namespace WebView2
 		}
 	private:
 
-        /// <summary>
+		/// <summary>
 		/// Enumerates child windows and finds the window with the specified class name.
 		/// </summary>
 		/// <param name="hwnd">The handle to the parent window.</param>

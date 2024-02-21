@@ -93,6 +93,9 @@
     <ClCompile Include="SingleWebView2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WebRequestDlg.cpp">
+      <Filter>Source Files\Dialogs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MainFrm.h">
@@ -169,6 +172,9 @@
     </ClInclude>
     <ClInclude Include="SingleWebView2.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WebRequestDlg.h">
+      <Filter>Header Files\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

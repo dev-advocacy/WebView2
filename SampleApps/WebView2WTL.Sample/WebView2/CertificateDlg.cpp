@@ -4,8 +4,6 @@
 #include "CertificateDlg.h"
 #include "osutility.h"
 
-// https://certtestdemo.azurewebsites.net/
-
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif

@@ -19,6 +19,7 @@ public:
 	void NavigationCompleted(std::wstring url);
 	void AuthenticationCompleted();
 
+
 	BOOL PreTranslateMessage(MSG* pMsg);
 
 	BEGIN_MSG_MAP(CWebView2)

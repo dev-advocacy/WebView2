@@ -248,6 +248,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="WebRequestDlg.cpp" />
     <ClCompile Include="WebView2.cpp" />
     <ClCompile Include="WebView2Impl.cpp" />
     <ClCompile Include="WebView2Main.cpp" />
@@ -274,6 +275,7 @@
     <ClInclude Include="osutility.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="WebRequestDlg.h" />
     <ClInclude Include="WebView2Impl2.h" />
     <ClInclude Include="WebView2.h" />
     <ClInclude Include="WebViewAuthentication.h" />

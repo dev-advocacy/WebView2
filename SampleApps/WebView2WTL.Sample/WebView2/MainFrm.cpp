@@ -8,6 +8,7 @@
 #include "MainFrm.h"
 #include "WebView2Impl2.h"
 #include "CertificateDlg.h"
+#include "WebRequestDlg.h"
 #include "Utility.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
@@ -57,7 +58,7 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	std::wstring version = WebView2::Utility::GetWebView2Version();
 	if (version.empty())
-        this->MessageBoxW(L"Please install the WebView2 Runtime: menu Scenario/Installation", 
+		this->MessageBoxW(L"Please install the WebView2 Runtime: menu Scenario/Installation", 
 			L"Warning", MB_OK | MB_ICONWARNING);
 
 	HRESULT hr = CWebViewProfile::Profile(m_webviewprofile);
@@ -95,6 +96,7 @@ LRESULT CMainFrame::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	bHandled = FALSE;
 	return 1;
 }
+
 
 LRESULT CMainFrame::OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
@@ -170,14 +172,30 @@ LRESULT CMainFrame::OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*
 	return 0;
 }
 
+LRESULT CMainFrame::OnScenarioWebRequest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CWebRequestDlg webrequestdlg;
+	auto ret = webrequestdlg.DoModal();
+	if (ret == TRUE)
+	{
+
+		auto hr = m_webview2->WebRequest(webrequestdlg.get_uri(), webrequestdlg.get_verb(), webrequestdlg.get_data(), L"Content-Type: application/json");
+		if (FAILED(hr))
+		{
+			LOG_TRACE << "The WebView2 WebRequest failed | " << "message" << ": 0x" << std::hex << std::setw(8) << hr;			
+		}
+	}
+	return 0;
+}
+
 LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-    constexpr size_t MaxMessageLength = 1024;
-    std::wstring message(MaxMessageLength, L'\0');
+	constexpr size_t MaxMessageLength = 1024;
+	std::wstring message(MaxMessageLength, L'\0');
 	std::wstring version = WebView2::Utility::GetWebView2Version();
 	
-    if (!version.empty())
-    {	//TODO: Replace with std::format when C++20 is enabled.
+	if (!version.empty())
+	{	//TODO: Replace with std::format when C++20 is enabled.
 		_snwprintf_s(message.data(), message.size(), _TRUNCATE,
 			L"WebView2 version %s is already installed.", version.c_str());
 		this->MessageBoxW(message.c_str(), L"Information", MB_OK | MB_ICONINFORMATION);
@@ -197,7 +215,7 @@ LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	}
 		
 	// Install WebView2 in per-user mode.
-    hr = WebView2::Utility::InstallWebView2(path, /*elevated*/ false);
+	hr = WebView2::Utility::InstallWebView2(path, /*elevated*/ false);
 		
 	if FAILED(hr)
 	{	//TODO: Replace with std::format when C++20 is enabled.
@@ -205,8 +223,7 @@ LRESULT CMainFrame::OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, H
 			L"Failed to install the latest WebView2 version. Error code: 0x%08X", hr);
 		this->MessageBoxW(message.c_str(), L"Error", MB_OK | MB_ICONERROR);
 		return 0;
-	}
-		
+	}		
 	this->MessageBoxW(L"Successfully installed the latest WebView2 version. "
 		L"Restart the application to refresh.",
 		L"Success", MB_OK | MB_ICONINFORMATION);
@@ -223,6 +240,9 @@ LRESULT CMainFrame::OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	}
 	return 0;
 }
+
+
+
 
 
 LRESULT CMainFrame::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
