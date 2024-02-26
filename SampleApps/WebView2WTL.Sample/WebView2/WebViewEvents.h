@@ -3,7 +3,6 @@
 #include "ClientCertificate.h"
 #include "CertificateDlg.h"
 #include "logger.h"
-
 #include <locale>
 #include <codecvt>
 

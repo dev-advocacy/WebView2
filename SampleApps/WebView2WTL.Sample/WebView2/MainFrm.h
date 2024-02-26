@@ -49,11 +49,17 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_PASTE, OnEditPaste)
 		COMMAND_ID_HANDLER(ID_EDIT_CUT, OnEditCut)
 
+		COMMAND_ID_HANDLER(ID_VIEW_DEVELOPPERTOOLS, OnScenario_View_Developper_Tools)
+
+		
+
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
 		COMMAND_ID_HANDLER(ID_SCENARIO_WEBRESOURCEREQUEST, OnScenarioWebRequest)
-
 		COMMAND_ID_HANDLER(ID_SCENARIO_INSTALLATION, OnScenarioInstallation)
+		COMMAND_ID_HANDLER(ID_SCENARIO_GETALLCOOKIES, OnScenarioGetAllCookies)
+		
+
 
 		MESSAGE_HANDLER(MSG_NAVIGATE_CALLBACK, OnNavigate)
 		
@@ -80,10 +86,13 @@ public:
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+
+	LRESULT OnScenario_View_Developper_Tools(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	
+
 	LRESULT OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditPaste(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
 
 	LRESULT OnScenarioWebView2Modal(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnScenarioWebView2Modeless(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -91,6 +100,7 @@ public:
 	LRESULT OnScenarioInstallation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnScenarioWebRequest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnScenarioGetAllCookies(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 	
 	

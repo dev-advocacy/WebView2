@@ -161,6 +161,141 @@ namespace WebView2
 			return S_OK;
 		}
 
+		HRESULT ShowDevelopperTools()
+		{
+			if (m_webView)
+			{
+				m_webView->OpenDevToolsWindow();
+			}
+			return S_OK;
+		}
+
+		std::wstring CookieToString(double expire)
+		{
+			// Convert the expiration date to a time_point
+			std::chrono::system_clock::time_point tp = std::chrono::system_clock::from_time_t(static_cast<std::time_t>(expire));
+
+			// Convert the time_point to a time_t
+			std::time_t tt = std::chrono::system_clock::to_time_t(tp);
+
+
+			// Convert the time_t to a tm structure
+			std::tm tm;
+			gmtime_s(&tm, &tt);
+
+			// Format the tm structure as a string
+			char buffer[256];
+			std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &tm);
+
+			// Convert the string to a wstring
+			std::wstring wstr(buffer, buffer + strlen(buffer));
+			return wstr;
+		}
+
+		std::wstring CookieToString(wil::com_ptr<ICoreWebView2Cookie> cookie)
+		{
+			LPWSTR name = nullptr;
+			LPWSTR domain = nullptr;
+			LPWSTR value = nullptr;
+			LPWSTR path = nullptr;
+			BOOL isHttpOnly = FALSE;
+			BOOL isSession = FALSE;
+			BOOL isSecure = FALSE;
+			COREWEBVIEW2_COOKIE_SAME_SITE_KIND sameSite = COREWEBVIEW2_COOKIE_SAME_SITE_KIND_NONE;
+			double expire = 0;
+
+			std::wstring result;
+			cookie->get_Name(&name);
+			cookie->get_Domain(&domain);
+			cookie->get_Value(&value);
+			cookie->get_IsSession(&isSession);
+			cookie->get_Expires(&expire);
+			cookie->get_IsSecure(&isSecure);
+			cookie->get_IsHttpOnly(&isHttpOnly);
+			cookie->get_SameSite(&sameSite);
+
+			cookie->get_Path(&path);
+
+			auto sExpire = CookieToString(expire);
+
+			LOG_TRACE << L"Name: " << name << L", Domain: " << domain << L", Value: " << value << L", Path: " << path << L", IsSession: " << isSession << L", IsSecure: " << isSecure << L", IsHttpOnly: " << isHttpOnly << L", SameSite: " << sameSite << L", Expire: " << sExpire;
+			result += L"Name: " + std::wstring(name) + L", ";
+			return result;
+		}
+
+		HRESULT GetCookies()
+		{
+			if (m_webView)
+			{
+
+				wil::com_ptr<ICoreWebView2_2> webView2;
+				m_webView->QueryInterface<ICoreWebView2_2>(&webView2);
+
+				wil::com_ptr<ICoreWebView2CookieManager> cookieManager;
+				RETURN_IF_FAILED(webView2->get_CookieManager(&cookieManager));
+				
+				if (cookieManager)
+				{
+					RETURN_IF_FAILED(cookieManager->GetCookies(nullptr, Microsoft::WRL::Callback<ICoreWebView2GetCookiesCompletedHandler>(
+							[this](HRESULT error_code, ICoreWebView2CookieList* list) -> HRESULT 
+					{
+								RETURN_IF_FAILED(error_code);
+
+								std::wstring result;
+								UINT cookie_list_size;
+								RETURN_IF_FAILED(list->get_Count(&cookie_list_size));
+
+								if (cookie_list_size == 0)
+								{
+									result += L"No cookies found.";
+								}
+								else
+								{
+									result += std::to_wstring(cookie_list_size) + L" cookie(s) found";
+									result += L"\n\n[";
+									for (UINT i = 0; i < cookie_list_size; ++i)
+									{
+										wil::com_ptr<ICoreWebView2Cookie> cookie;
+										RETURN_IF_FAILED(list->GetValueAtIndex(i, &cookie));
+
+										if (cookie.get())
+										{
+											result += CookieToString(cookie.get());
+											if (i != cookie_list_size - 1)
+											{
+												result += L",\n";
+											}
+										}
+									}
+									result += L"]";
+								}								
+								return S_OK;
+							})
+						.Get()));
+				}
+				else
+				{
+					LOG_ERROR << "CookieManager is null";
+					return E_FAIL;
+				}
+			}
+			else
+			{
+				LOG_ERROR << "WebView is null";
+				return E_FAIL;
+			}
+			return S_OK;
+			
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="uri"></param>
+		/// <param name="verb"></param>
+		/// <param name="data"></param>
+		/// <param name="contenttype"></param>
+		/// <returns></returns>
 		HRESULT WebRequest(std::wstring uri, std::wstring verb, std::wstring data,std::wstring contenttype)
 		{
 			HRESULT hr = S_OK;
@@ -172,7 +307,7 @@ namespace WebView2
 
 				if (!data.empty())
 				{
-					std::wstring postData = /*std::wstring(L"input=") + */data;
+					std::wstring postData = data;
 					hr = getpostData(postData, postDataBytes, sizeNeededForMultiByte);
 				}
 

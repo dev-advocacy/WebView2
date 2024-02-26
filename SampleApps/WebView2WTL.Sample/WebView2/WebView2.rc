@@ -106,6 +106,7 @@ BEGIN
     BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
+        MENUITEM "Developper Tools",            ID_VIEW_DEVELOPPERTOOLS
     END
     POPUP "Scenario"
     BEGIN
@@ -114,6 +115,8 @@ BEGIN
         MENUITEM "WebResourceRequest",          ID_SCENARIO_WEBRESOURCEREQUEST
         MENUITEM SEPARATOR
         MENUITEM "Installation",                ID_SCENARIO_INSTALLATION
+        MENUITEM SEPARATOR
+        MENUITEM "GetAllCookies",               ID_SCENARIO_GETALLCOOKIES
     END
     POPUP "&Help"
     BEGIN
