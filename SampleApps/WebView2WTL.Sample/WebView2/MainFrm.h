@@ -17,10 +17,8 @@ public:
 	DECLARE_FRAME_WND_CLASS(NULL, IDR_MAINFRAME)
 
 	CCommandBarCtrl						m_CmdBar;
-	std::unique_ptr <CWebView2>			m_webview2 = nullptr;
-	
+	std::unique_ptr <CWebView2>			m_webview2 = nullptr;	
 	std::unique_ptr<CDlgWebView2>		m_dlgWebWiew2Modeless = nullptr;
-	
 	ProfileInformation_t				m_webviewprofile;
 	CURLCombo							m_wndCombo;
 	
@@ -50,8 +48,6 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_CUT, OnEditCut)
 
 		COMMAND_ID_HANDLER(ID_VIEW_DEVELOPPERTOOLS, OnScenario_View_Developper_Tools)
-
-		
 
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODALDIALOG, OnScenarioWebView2Modal)
 		COMMAND_ID_HANDLER(ID_SCENARIO_MODELELESSDIALOG, OnScenarioWebView2Modeless)
