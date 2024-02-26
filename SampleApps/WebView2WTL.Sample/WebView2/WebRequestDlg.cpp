@@ -21,15 +21,6 @@ LRESULT CWebRequestDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 	m_verbs.AddString(L"GET");
 	m_verbs.AddString(L"POST");
-	m_verbs.AddString(L"HEAD");
-	m_verbs.AddString(L"PUT");
-	m_verbs.AddString(L"DELETE");
-	m_verbs.AddString(L"OPTIONS");
-	m_verbs.AddString(L"PATCH");
-	m_verbs.AddString(L"LINK");
-	m_verbs.AddString(L"UNLINK");
-	m_verbs.SelectString(0, L"GET");
-
 	DoDataExchange(false);
 
 	return TRUE;
