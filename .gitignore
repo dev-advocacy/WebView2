@@ -20,3 +20,15 @@
 /WebView2/x64/Debug
 /x64/Debug
 /SampleApps/.vs/WebViewSolution
+/SampleApps/WebView2WTL.Sample/HttpClient/vcpkg_installed/x64-windows
+/SampleApps/WebView2WTL.Sample/HttpClient/x64/Debug
+/SampleApps/WebView2WTL.Sample/HttpClientTest/vcpkg_installed/x64-windows
+/SampleApps/WebView2WTL.Sample/HttpClientTest/x64/Debug
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApp1/.vs/ConsoleApp1
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApp1/ConsoleApp1/bin/Debug
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApp1/ConsoleApp1/obj/Debug
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApp1/packages
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApplication1/.vs/ConsoleApplication1
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApplication1/ConsoleApplication1/vcpkg_installed/x64-windows
+/SampleApps/WebView2WTL.Sample/opentelemetry/ConsoleApplication1/ConsoleApplication1/x64/Debug
+/SampleApps/WebView2WTL.Sample/packages/Microsoft.Windows.CppWinRT.2.0.220531.1
