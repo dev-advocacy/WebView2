@@ -261,15 +261,27 @@ namespace WebView2
 			BOOL is_redirected = FALSE;
 			BOOL is_userInitiated = FALSE;
 			UINT64 inavigationid = 0;
-			args->get_IsRedirected(&is_redirected);
-			args->get_IsUserInitiated(&is_userInitiated);
-			args->get_NavigationId(&inavigationid);
 
-			wil::unique_cotaskmem_string navigationTargetUri;
-			if (SUCCEEDED(args->get_Uri(&navigationTargetUri)))
+			if (args != nullptr)
 			{
-				LOG_TRACE << __FUNCTION__ << " uri:" << navigationTargetUri.get() << " redirected:" << is_redirected
-						  << " is user initiated:" << is_userInitiated << "NavigationId" << inavigationid;
+				args->get_IsRedirected(&is_redirected);
+				args->get_IsUserInitiated(&is_userInitiated);
+				args->get_NavigationId(&inavigationid);
+
+				wil::unique_cotaskmem_string navigationTargetUri;
+				if (SUCCEEDED(args->get_Uri(&navigationTargetUri)))
+				{
+					LOG_TRACE << __FUNCTION__ << " uri:" << navigationTargetUri.get() << " redirected:" << is_redirected
+						<< " is user initiated:" << is_userInitiated << "NavigationId" << inavigationid;
+				}
+				else
+				{
+					LOG_TRACE << __FUNCTION__ << " get_Uri failed";
+				}
+			}
+			else
+			{
+				LOG_TRACE << __FUNCTION__ << " args is nullptr";
 			}
 		}
 		void raise_webresource_navigation_starting_event(wil::com_ptr <ICoreWebView2NavigationStartingEventArgs> args)
