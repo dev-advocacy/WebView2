@@ -51,7 +51,7 @@ namespace WebView2
             if (pos != 0 && pos1 != 0 && pos1 > pos)
             {
                 pFileName = wszPath;
-                pFileNameNoEx = L"Log_" + GetDateTime() + L".log";
+                pFileNameNoEx = L"Log_WebView2.log";
 
                 pFileName.append(COMPFOLDER);
 

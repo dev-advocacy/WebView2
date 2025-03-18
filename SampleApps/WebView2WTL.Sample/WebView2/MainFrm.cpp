@@ -9,6 +9,8 @@
 #include "WebView2Impl2.h"
 #include "CertificateDlg.h"
 #include "WebRequestDlg.h"
+#include "DetectDlg.h"
+
 #include "Utility.h"
 
 BOOL CMainFrame::PreTranslateMessage(MSG* pMsg)
@@ -56,16 +58,21 @@ LRESULT CMainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleStatusBar();
 
-	std::wstring version = WebView2::Utility::GetWebView2Version();
-	if (version.empty())
-		this->MessageBoxW(L"Please install the WebView2 Runtime: menu Scenario/Installation", 
-			L"Warning", MB_OK | MB_ICONWARNING);
-
+	
+	
 	HRESULT hr = CWebViewProfile::Profile(m_webviewprofile);
 	if (FAILED(hr))
 	{
+		
 		return 0;
 	}
+
+	std::wstring version = m_webviewprofile.version;
+	if (version.empty())
+		this->MessageBoxW(L"Please install the WebView2 Runtime: menu Scenario/Installation",L"Warning", MB_OK | MB_ICONWARNING);
+
+	_webview_version = version;
+
 	m_webview2 = std::make_unique<CWebView2>(m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, L"https://msdn.microsoft.com");
 	m_hWndClient = m_webview2->Create(m_hWnd, rcDefault, nullptr, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_CLIENTEDGE);
 
@@ -141,6 +148,10 @@ LRESULT CMainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT CMainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	CAboutDlg dlg;
+
+	
+
+	dlg.InitDDX(_webview_version, m_webviewprofile.browserDirectory, m_webviewprofile.userDataDirectory, m_webviewprofile.channel);
 	dlg.DoModal();
 	return 0;
 }
@@ -241,10 +252,6 @@ LRESULT CMainFrame::OnNavigate(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	return 0;
 }
 
-
-
-
-
 LRESULT CMainFrame::OnEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	HWND hwnd = GetFocus();
@@ -292,3 +299,11 @@ LRESULT CMainFrame::OnEditCut(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	}
 	return 0L;
 }
+
+LRESULT CMainFrame::OnScenarioDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	CDetectDlg detectdlg;
+	auto ret = detectdlg.DoModal();
+	return 0L;
+}
+

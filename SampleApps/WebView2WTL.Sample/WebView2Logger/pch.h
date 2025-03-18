@@ -7,6 +7,8 @@
 #ifndef PCH_H
 #define PCH_H
 
+#define BOOST_USE_WINAPI_VERSION	0x0601
+
 #include <iostream>
 #include <string>
 #include <boost/log/utility/ipc/reliable_message_queue.hpp>

@@ -16,8 +16,7 @@ HRESULT CWebViewProfile::Profile(ProfileInformation_t& profile)
 	{   // Assume first argument is WebView2 version to use, in the format "x.y.z.t".
 		webView2Version = argv[1];
 		LOG_TRACE << "User-provided WebView2 version=" << webView2Version.data();
-	}
-
+	}	
 	std::wstring_view webView2Channel = L"";
 	if (argc > 2)
 	{   // Assume second argument is WebView2 channel to use: "beta", "dev", "canary" or  "fixed" "" for stable channel.
@@ -32,7 +31,11 @@ HRESULT CWebViewProfile::Profile(ProfileInformation_t& profile)
 	}
 
 	// Verify that the WebView2 runtime is installed.
+	
+
 	PWSTR edgeVersionInfo = nullptr;
+
+	
 	HRESULT hr = ::GetAvailableCoreWebView2BrowserVersionString(nullptr, &edgeVersionInfo);
 	if (FAILED(hr) || (edgeVersionInfo == nullptr))
 	{
@@ -62,9 +65,9 @@ HRESULT CWebViewProfile::Profile(ProfileInformation_t& profile)
 		LOG_TRACE << "Using WebView2 version=" << webView2Version.data();
 		LOG_TRACE << "Using WebView2 channel=" << webView2Channel.data();
 	}
-
 	profile.browserDirectory = WebView2::Utility::GetBrowserDirectory(webView2Version, webView2Channel, webViewFolder);
 	profile.userDataDirectory = WebView2::Utility::GetUserDataDirectory(webView2Channel);
-
+	profile.channel = webView2Channel.empty() ? L"stable release" : webView2Channel;	
+	profile.version = webView2Version;
 	return (hr);
 }

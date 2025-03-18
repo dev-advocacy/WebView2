@@ -4,6 +4,9 @@ typedef struct ProfileInformation
 {
     std::wstring  browserDirectory;
 	std::wstring  userDataDirectory;
+	std::wstring  channel;
+	std::wstring  version;
+
 
 } ProfileInformation_t;
 
