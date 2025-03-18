@@ -263,6 +263,7 @@
     <ClInclude Include="ClientCertificate.h" />
     <ClInclude Include="ColoredControls.h" />
     <ClInclude Include="CompositionHost.h" />
+    <ClInclude Include="EdgeInfomation.h" />
     <ClInclude Include="headersprop.h" />
     <ClInclude Include="ImageListBox.h" />
     <ClInclude Include="LogView.h" />

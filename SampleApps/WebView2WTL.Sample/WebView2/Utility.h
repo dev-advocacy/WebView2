@@ -1,4 +1,8 @@
 #pragma once
+
+
+#include "EdgeInfomation.h"
+
 namespace WebView2
 {
 	class Utility
@@ -17,9 +21,10 @@ namespace WebView2
 		static std::wstring SecondsToString(UINT32 time);
 		static std::wstring CookieToString(ICoreWebView2Cookie* cookie);
 		static std::error_code GetUniqueLogFileName(fs::path& pFileName);
+		static std::list<EdgeInfomation> EnumEdgeVersion();
 	private:
 		static std::wstring GetProgramFilesx86Directory();
-		static std::wstring GetLangStringFromLangId(DWORD dwLangID_i, bool returnShortCode);
-
+		static std::wstring GetLangStringFromLangId(DWORD dwLangID_i, bool returnShortCode);		
+		static EdgeInfomation GetVersionFromRegistry(HKEY key, std::wstring key_entry);
 	};
 };

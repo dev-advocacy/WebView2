@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Utility.h"
+#include "EdgeInfomation.h"
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -147,6 +148,65 @@ namespace WebView2
             ATLTRACE("function=%s, message=%s, hr=%d\n", __func__, std::system_category().message(hr).data(), hr);
         }
         return hr;
+    }
+
+    std::list<EdgeInfomation> Utility::EnumEdgeVersion()
+    {
+        std::list<EdgeInfomation> edge_versions;
+
+        std::vector<std::wstring> keys = {
+            L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft EdgeWebView",
+            L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Beta",
+            L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Dev",
+        };
+        for (const auto& key : keys)
+        {
+            auto edgeinfo = GetVersionFromRegistry(HKEY_LOCAL_MACHINE, key);
+			if (!edgeinfo.m_name.empty())
+			{
+				edge_versions.push_back(edgeinfo);
+			}
+            edgeinfo = GetVersionFromRegistry(HKEY_CURRENT_USER, key);
+            if (!edgeinfo.m_name.empty())
+            {
+                edge_versions.push_back(edgeinfo);
+            }
+        }
+		return edge_versions;
+    }
+    EdgeInfomation Utility::GetVersionFromRegistry(HKEY key, std::wstring key_entry)
+    {
+        CRegKey regKey;        
+        // Open the registry key
+        if (regKey.Open(key, key_entry.c_str(), KEY_READ) == ERROR_SUCCESS)
+        {
+            // Read the version value
+            DWORD dwSize = 0;
+            regKey.QueryStringValue(L"DisplayVersion", nullptr, &dwSize);
+            std::wstring version(dwSize, L'\0');
+            regKey.QueryStringValue(L"DisplayVersion", &version[0], &dwSize);
+
+            //get the display name
+            dwSize = 0;
+            regKey.QueryStringValue(L"DisplayName", nullptr, &dwSize);
+            std::wstring display_name(dwSize, L'\0');
+            regKey.QueryStringValue(L"DisplayName", &display_name[0], &dwSize);
+
+            // Get the install location
+            dwSize = 0;
+            regKey.QueryStringValue(L"InstallLocation", nullptr, &dwSize);
+            std::wstring install_location(dwSize, L'\0');
+            regKey.QueryStringValue(L"InstallLocation", &install_location[0], &dwSize);
+
+            EdgeInfomation edge(display_name, version, install_location);
+            
+            return edge;
+        }
+		else
+		{
+			ATLTRACE("Failed to open registry key: %ls\n", key_entry.c_str());
+			return EdgeInfomation(L"", L"", L"");
+		}
     }
 
     // Get directory containing the browser based on webView2Version and webView2Channel.

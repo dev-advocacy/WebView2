@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "resource.h"
+#include "EdgeInfomation.h"
+#include "Utility.h"
 #include "DetectDlg.h"
 
 LRESULT CDetectDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -14,13 +16,12 @@ LRESULT CDetectDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	}
 	CComboBox* pComPortSelection = reinterpret_cast<CComboBox*>(&p);
 	
-	GetVersion();
+	m_edge_versions = WebView2::Utility::EnumEdgeVersion();
 
 	for (auto it = m_edge_versions.begin(); it != m_edge_versions.end(); ++it)
 	{
 		pComPortSelection->AddString(it->m_name.c_str());
 	}
-
 
 	if (!m_edge_versions.empty())
 	{
@@ -77,47 +78,4 @@ LRESULT CDetectDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	return 0;
 }
 
-void CDetectDlg::GetVersion()
-{
-	std::vector<std::wstring> keys = {
-		L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft EdgeWebView",
-		L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Beta",
-		L"SOFTWARE\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Microsoft Edge Dev",
-	};
-	for (const auto& key : keys)
-	{
-		GetVersionFromRegistry(HKEY_LOCAL_MACHINE, key);
-		GetVersionFromRegistry(HKEY_CURRENT_USER, key);
-	}	
-}
-void CDetectDlg::GetVersionFromRegistry(HKEY key, std::wstring key_entry)
-{
-	CRegKey regKey;
-	// Open the registry key
-	if (regKey.Open(key, key_entry.c_str(), KEY_READ) == ERROR_SUCCESS)
-	{
-		// Read the version value
-		DWORD dwSize = 0;
-		regKey.QueryStringValue(L"DisplayVersion", nullptr, &dwSize);
-		std::wstring version(dwSize, L'\0');
-		regKey.QueryStringValue(L"DisplayVersion", &version[0], &dwSize);
 
-		//get the display name
-		dwSize = 0;
-		regKey.QueryStringValue(L"DisplayName", nullptr, &dwSize);
-		std::wstring display_name(dwSize, L'\0');
-		regKey.QueryStringValue(L"DisplayName", &display_name[0], &dwSize);
-
-		// Get the install location
-		dwSize = 0;
-		regKey.QueryStringValue(L"InstallLocation", nullptr, &dwSize);
-		std::wstring install_location(dwSize, L'\0');
-		regKey.QueryStringValue(L"InstallLocation", &install_location[0], &dwSize);
-
-		EdgeInfomation edge(display_name, version, install_location);
-		// Add the version to the list
-		m_edge_versions.push_back(edge);
-		
-		
-	}
-}
